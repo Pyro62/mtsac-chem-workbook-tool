@@ -78,10 +78,13 @@ process_assessment(df)
 print("\nAssessment 2:")
 process_assessment(df2)
 
+
 #Things to figure out later:
-#1. add function to get student name
+#1. add function to get student name; error handling if name is missing
+
 #2. wait for others to finish upload implementation
-#   i) after waiting for ^^, we will figure out how to pass df automatically
+
+#   i) after waiting for ^^,  figure out how to pass df automatically
 
 #3. in get_incorrect_questions function, add error handling or automatic detection of number of questions so it isnt fixed
 # at 30 iterations
