@@ -6,7 +6,7 @@ import pandas as pd
 def get_incorrect_questions(student_row):
     incorrect_question = []
 
-    #CHANGE 30 LATER IN CASE MORE/LESS QUESTIONS
+    #CHANGE 30 LATER IN CASE MORE/LESS QUESTIONS (critical)
     for questionNum in range(30):
 
         points = student_row[f"EarnedPt{questionNum+1}"]
@@ -25,7 +25,7 @@ def get_topics_to_review(student_incorrect_questions):
 
     for question in student_incorrect_questions:
 
-        #Change 15 LATER IN CASE MORE/LESS TOPICS
+        #Change 15 LATER IN CASE MORE/LESS TOPICS (critical)
         topic = question % 15
         if topic == 0:
             topic = 15
@@ -80,7 +80,12 @@ process_assessment(df2)
 
 #Things to figure out later:
 #1. add function to get student name
-#2. figure out how to pass df automatically
-#3. wait for others to finish upload implementation
+#2. wait for others to finish upload implementation
 #   i) after waiting for ^^, we will figure out how to pass df automatically
+
+#3. in get_incorrect_questions function, add error handling or automatic detection of number of questions so it isnt fixed
+# at 30 iterations
+
+#4. in get_topics_to_review function, add error handling or automatic detection of number of topics so it isnt fixed
+# at 15 iterations
 
