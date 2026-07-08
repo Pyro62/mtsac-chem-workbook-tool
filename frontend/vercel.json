@@ -1,0 +1,8 @@
+{
+  "rewrites": [
+    {
+      "source": "/api/:path*",
+      "destination": "https://spotify-visualizer-elsj.onrender.com/:path*"
+    }
+  ]
+}
