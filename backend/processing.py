@@ -25,6 +25,7 @@ def get_topics_to_review(student_incorrect_questions):
 
     for question in student_incorrect_questions:
 
+        #Change 15 LATER IN CASE MORE/LESS TOPICS
         topic = question % 15
         if topic == 0:
             topic = 15
@@ -44,8 +45,11 @@ def get_topics_to_review(student_incorrect_questions):
 # Returns: VOID (But probably should return the something)
 def process_assessment(df):
 
-    num_students = df.shape[0]  #Get number of students (1 row = 1 student)
-    
+    #Get number of students (1 row = 1 student)
+    num_students = df.shape[0]
+
+    #student: [topics to review]
+    result = dict()
 
     for student in range(num_students): 
 
@@ -58,8 +62,11 @@ def process_assessment(df):
         #Returns list of topics student needs to review
         topics_to_review = get_topics_to_review(incorrect_questions)
 
-
-        print(f"Student {student + 1} needs to review topics: {topics_to_review}")
+        #For testing
+        result[f"Student #{student + 1}"] = topics_to_review
+    
+    print(result)
+    return result
 
 
 #----------------------USE FOR TESTING--------
@@ -72,7 +79,8 @@ print("\nAssessment 2:")
 process_assessment(df2)
 
 #Things to figure out later:
-'''1. how to automate df access
-2. how to find num of questions in test
-3. implement automated reporting instead of running program manually'''
+#1. add function to get student name
+#2. figure out how to pass df automatically
+#3. wait for others to finish upload implementation
+#   i) after waiting for ^^, we will figure out how to pass df automatically
 
