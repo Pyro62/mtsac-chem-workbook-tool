@@ -132,11 +132,11 @@ def process_assessment(df):
 
 #----------------------USE FOR TESTING--------
 # to test from this file, might need to use "cd mtsac-chem-workbook-tool\backend" to adjust path
-df = pd.read_excel('../test_data/assessment40.xlsx')
+#df = pd.read_excel('../test_data/assessment40.xlsx')
 #df2 = pd.read_excel('../test_data/assessment10.xlsx')
 
-print("Assessment 1:")
-process_assessment(df)
+#print("Assessment 1:")
+#process_assessment(df)
 #print("\nAssessment 2:")
 #process_assessment(df2)
 
