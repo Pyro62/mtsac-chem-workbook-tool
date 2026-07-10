@@ -28,7 +28,7 @@ function App() {
 
     try {
       // 2. Point this to your FastAPI endpoint URL
-      const response = await fetch('http://127.0.0.1:8000/upload', {
+      const response = await fetch('/api/upload', {
         method: 'POST',
         body: formData, // Do NOT set Content-Type header manually; browser handles it
       })
