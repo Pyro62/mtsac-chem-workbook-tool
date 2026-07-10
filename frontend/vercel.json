@@ -2,7 +2,7 @@
   "rewrites": [
     {
       "source": "/api/:path*",
-      "destination": "https://mtsac-chem-workbook-tool-backend.onrender.com"
+      "destination": "https://mtsac-chem-workbook-tool-backend.onrender.com/:path*"
     }
   ]
 }
