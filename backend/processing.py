@@ -122,13 +122,13 @@ def process_assessment(df):
 
 
 #----------------------USE FOR TESTING--------
-df = pd.read_excel('../test_data/assessment40.xlsx')
-df2 = pd.read_excel('../test_data/assessment10.xlsx')
+#df = pd.read_excel('../test_data/assessment40.xlsx')
+#df2 = pd.read_excel('../test_data/assessment10.xlsx')
 
 print("Assessment 1:")
-process_assessment(df)
+#process_assessment(df)
 print("\nAssessment 2:")
-process_assessment(df2)
+#process_assessment(df2)
 
 
 #Things to figure out later:

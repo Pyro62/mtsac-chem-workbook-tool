@@ -1,15 +1,17 @@
-from fastapi import FastAPI
+from fastapi import FastAPI, File, UploadFile
 from fastapi.middleware.cors import CORSMiddleware
 import os
 from dotenv import load_dotenv
-import asyncpg
-
+from processing import process_assessment
+import io
+import pandas as pd
 load_dotenv()
 
 app = FastAPI()
 
 origins = [
-    "http://localhost:5173"
+    "http://localhost:5173",
+    "https://mtsac-chem-workbook-tool.vercel.app/"
 ]
 
 app.add_middleware(
@@ -20,7 +22,6 @@ app.add_middleware(
     allow_headers=["*"],
 )
 
-DATABASE_URL = os.getenv("DATABASE_URL")
 ENVIRONMENT = os.getenv("ENVIRONMENT")
 # world hello
 @app.get("/")
@@ -29,4 +30,13 @@ async def read_root():
             "status": "ok, backend connected to front",
             "environment": ENVIRONMENT
             }
+
+@app.post("/upload")
+async def upload_file(file: UploadFile = File(...)):
+    contents = await file.read() # read file content
+
+    df = pd.read_excel(io.BytesIO(contents)) # feed it into pandas in bytes
     
+    analysis_result = process_assessment(df)
+    # run and return
+    return analysis_result
