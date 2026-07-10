@@ -126,6 +126,7 @@ def process_assessment(df):
     for student in result:
         print(student, result[student])
 
+    print(type(result))
     return result
 
 
