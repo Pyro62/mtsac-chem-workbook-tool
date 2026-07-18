@@ -4,6 +4,26 @@ import pandas as pd
 # Function that gets student First and Last name and checks if valid
 # Parameter: A row from given from DF
 # Returns: If no name: tuple with None (None, None) | If valid: tuple (first_name, last_name)
+
+#dict that maps topic num to chapters
+TOPIC_MAP = {
+    "2.1": "Positive and Negative Numbers",
+    "2.2": "Number Line and Place Values",
+    "2.3": "Number Sense",
+    "2.4": "Math Notation",
+    "2.5": "Fractions",
+    "2.6": "Exponents",
+    "2.7": "Orders of Operation",
+    "2.8": "Scientific Notation",
+    "2.9": "How to Use a Scientific Calculator",
+    "2.10": "Solving Simple Algebraic Equations",
+    "2.11": "Math with Units",
+    "2.12": "Word Problems",
+    "2.13": "Percents",
+    "2.14": "Averages",
+    "2.15": "Direct and Inverse Proportions"
+}
+
 def get_student_name(student_row):
 
     # Get First/Last Name
@@ -66,31 +86,34 @@ def get_incorrect_questions(student_row):
 # Returns: List of topics student needs to review
 def get_topics_to_review(student_incorrect_questions, student_row):
     topics_to_review = set()
+    questions_per_topic = 2 
 
     for question in student_incorrect_questions:
-
-        #Change 15 LATER IN CASE MORE/LESS TOPICS (critical) -==- DONE
-        # SET AT DEFAULT 2 | Change if assessment has different amount of questions per topic
-        # questions_per_topic can also be hooked up to parameter in website if wanted
-        questions_per_topic = 2 
-
-        # Currently requires access to column "NumbeOfQuestions" for automatic topic count
         topic_count = int(student_row["NumbeOfQuestions"] / questions_per_topic)
-        topic = question % topic_count
-        if topic == 0:
-            topic = topic_count
+        topic_num = question % topic_count
+        if topic_num == 0:
+            topic_num = topic_count
 
-        #Add "2.num" to specifiy the chapter students should review (e.g. 2.15, 2.4)
-        topic = f"2.{topic}"
-            
-        topics_to_review.add(topic)
+        # Create the key to look up ex, "2.1"
+        topic_key = f"2.{topic_num}"
+        
+        # fetch from dict, if not there, return unknown topic
+        topic_name = TOPIC_MAP.get(topic_key, "Unknown Topic")
+        
+        # Combine them: "2.1: Positive and Negative Numbers"
+        full_topic_string = f"{topic_key}: {topic_name}"
+        
+        topics_to_review.add(full_topic_string)
 
-    # Sorts Results (prioritizes length of string [single or double diget], then value of float)
-    topics_to_review = sorted(topics_to_review, key=lambda x: (len(x), float(x)))
+    # Sorting logic remains similar, but now we must parse the float from the start of the string
+    # We split by ":" to get "2.1" and convert to float for correct numerical sorting
+    # Sorts by splitting "2.10: Topic" into (2, 10)
+    topics_to_review = sorted(
+        list(topics_to_review), 
+        key=lambda x: [int(part) for part in x.split(":")[0].split(".")]
+    )
 
-    # Returns sorted set of strings (e.g. {"2.1", "2.10", "2.15"})
     return topics_to_review
-
 
 # Function Prints assessment results 
 # Parameter: Dataframe with access to file
