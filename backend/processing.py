@@ -29,12 +29,13 @@ def get_student_name(student_row):
             print(f"ERROR -==- Last Name is EMPTY for record #{record_number}")
             
         # # UNCOMMENT AND CHANGE HERE IF SPECIFIC ERROR OUTPUT DESIRED | OTHERWISE OUTPUT IS (None, None)
-        # return (first_name, last_name)
+        return (first_name, last_name)
     
     # Returns First and Last name as tuple (First, Last)
     full_name = (first_name, last_name)
     return full_name
     
+
 # Function that iterates on a student row; looks specifically at missed points; save incorrect questions into list
 # Parameter: A row from given from DF
 # Returns: List of the questions student got wrong
@@ -106,6 +107,9 @@ def process_assessment(df):
 
         #Grabs the information for current student
         student_row = df.iloc[student]
+
+        #Get student's name
+        first_name, last_name = get_student_name(student_row)
         
         #Returns list of incorrect questions for current student
         incorrect_questions = get_incorrect_questions(student_row)
@@ -113,29 +117,31 @@ def process_assessment(df):
         #Returns list of topics student needs to review
         topics_to_review = get_topics_to_review(incorrect_questions, student_row)
 
-        #For testing
-        result[f"Student #{student + 1}"] = topics_to_review
-    
+        if first_name is None or last_name is None:
+            result[f"Student #{student + 1}"] = topics_to_review
+        else:
+            result[f"{first_name} {last_name}"] = topics_to_review
+
+    #FOR TESTING PURPOSES
     for student in result:
         print(student, result[student])
+
+    print(type(result))
     return result
 
 
 #----------------------USE FOR TESTING--------
+# to test from this file, might need to use "cd mtsac-chem-workbook-tool\backend" to adjust path
 #df = pd.read_excel('../test_data/assessment40.xlsx')
 #df2 = pd.read_excel('../test_data/assessment10.xlsx')
 
-print("Assessment 1:")
+#print("Assessment 1:")
 #process_assessment(df)
-print("\nAssessment 2:")
+#print("\nAssessment 2:")
 #process_assessment(df2)
 
 
 #Things to figure out later:
-#1. add function to get student name; error handling if name is missing
-# DONE! Only need to customize output if you want a specific output
-# I did not hook it up to anywhere, I'm not sure where it should go
-# Currently students are identified by student_row.name+1 and student+1, which are both the student's number 
 
 #2. wait for others to finish upload implementation
 
@@ -144,14 +150,3 @@ print("\nAssessment 2:")
 #5. Is "NumbeOfQuestions" going to be corrected? If so, correct them here
 
 
-# Tasks Completed:
-
-#3. in get_incorrect_questions function, add error handling or automatic detection of number of questions so it isnt fixed
-# at 30 iterations
-# Automatic Detection DONE! Retrieves it based off of value in column "NumbeOfQuestions"
-
-#4. in get_topics_to_review function, add error handling or automatic detection of number of topics so it isnt fixed
-# at 15 iterations
-# DONE! Changed: get_topics_to_review to have extra parameter of student_row to have access to column "NumbeOfQuestions"
-# for auto detection 
-# Also, can allow for user customization for questions_per_topic variable
