@@ -18,10 +18,12 @@ TOPIC_MAP = {
     "2.9": "How to Use a Scientific Calculator",
     "2.10": "Solving Simple Algebraic Equations",
     "2.11": "Math with Units",
-    "2.12": "Word Problems",
-    "2.13": "Percents",
+    "2.12": "Solving Word Problems",
+    "2.13": "Percentages",
     "2.14": "Averages",
-    "2.15": "Direct and Inverse Proportions"
+    "2.15": "Direct and Inverse Proportions",
+    "2.16": "Graphing",
+    "2.17": "Log and Inverse Log Functions"
 }
 
 def get_student_name(student_row):
@@ -120,7 +122,7 @@ def get_topics_to_review(student_incorrect_questions, student_row):
 # Parameter: student row and student number (index)
 # Returns: student id string
 def get_stu_id(student_row, student):
-    stu_id = None if pd.isna(student_row["StudentID"]) else student_row["StudentID"]
+    stu_id = None if pd.isna(student_row["ExternalID"]) else student_row["ExternalID"]
 
     if stu_id is None:
         temp_id = student
@@ -187,7 +189,7 @@ def process_assessment(df):
 
 #Things to figure out later:
 
-#add identifier per student
-
+#retrieve score for each student and add to the report
+#retrieve stats numbers stuff
 
 
