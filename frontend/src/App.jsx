@@ -13,38 +13,31 @@ function App() {
   }
 
   const handleUpload = async () => {
-    if (!file) {
-      alert("Please select an Excel file first!")
-      return
-    }
+  setLoading(true);
+  const formData = new FormData();
+  formData.append('file', file);
 
-    setLoading(true)
-    setResult(null) // Reset previous results
+  const response = await fetch('/api/download-zip', { method: 'POST', body: formData });
 
-    // 1. Create FormData and append the file
-    // Crucial: The first argument 'file' MUST match your FastAPI parameter name exactly!
-    const formData = new FormData()
-    formData.append('file', file)
-
-    try {
-      // 2. Point this to your FastAPI endpoint URL
-      const response = await fetch('/api/upload', {
-        method: 'POST',
-        body: formData, // Do NOT set Content-Type header manually; browser handles it
-      })
-
-      if (!response.ok) {
-        throw new Error(`Server responded with status ${response.status}`)
-      }
-
-      const data = await response.json()
-      setResult({ success: true, data })
-    } catch (error) {
-      setResult({ success: false, error: error.message })
-    } finally {
-      setLoading(false)
-    }
+  if (!response.ok) {
+    const errorData = await response.json(); // if it failed, it's usually JSON error text
+    setResult({ success: false, error: errorData.detail || "Upload failed" });
+    setLoading(false);
+    return;
   }
+
+  // if we are here, it's the ZIP file
+  const blob = await response.blob();
+  const url = window.URL.createObjectURL(blob);
+  const a = document.createElement('a');
+  a.href = url;
+  a.download = 'student_reports.zip';
+  document.body.appendChild(a);
+  a.click();
+  a.remove();
+  
+  setLoading(false);
+};
 
   return (
     <div style={{ padding: '40px', fontFamily: 'sans-serif', textAlign: 'center' }}>

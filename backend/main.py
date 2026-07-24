@@ -5,6 +5,8 @@ from dotenv import load_dotenv
 from processing import process_assessment
 import io
 import pandas as pd
+from fastapi.responses import StreamingResponse
+from filegen import file_generator
 load_dotenv()
 
 app = FastAPI()
@@ -31,12 +33,17 @@ async def read_root():
             "environment": ENVIRONMENT
             }
 
-@app.post("/upload")
-async def upload_file(file: UploadFile = File(...)):
-    contents = await file.read() # read file content
-
-    df = pd.read_excel(io.BytesIO(contents)) # feed it into pandas in bytes
+@app.post("/download-zip")
+async def download_zip(file: UploadFile = File(...)):
+    #process and return a downloadable ZIP
+    contents = await file.read()
+    df = pd.read_excel(io.BytesIO(contents))
+    results = process_assessment(df)
     
-    analysis_result = process_assessment(df)
-    # run and return
-    return analysis_result
+    zip_buffer = file_generator(results)
+    
+    return StreamingResponse(
+        zip_buffer,
+        media_type="application/zip",
+        headers={"Content-Disposition": "attachment; filename=student_reports.zip"}
+    )
