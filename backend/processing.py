@@ -143,10 +143,7 @@ def process_assessment(df):
 
 #Things to figure out later:
 
-#2. wait for others to finish upload implementation
+#add identifier per student
 
-#   i) after waiting for ^^,  figure out how to pass df automatically
-
-#5. Is "NumbeOfQuestions" going to be corrected? If so, correct them here
 
 
