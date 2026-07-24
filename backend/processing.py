@@ -115,6 +115,20 @@ def get_topics_to_review(student_incorrect_questions, student_row):
 
     return topics_to_review
 
+
+# Function get student id
+# Parameter: student row and student number (index)
+# Returns: student id string
+def get_stu_id(student_row, student):
+    stu_id = None if pd.isna(student_row["StudentID"]) else student_row["StudentID"]
+
+    if stu_id is None:
+        temp_id = student
+        stu_id = f"Temp ID #{temp_id + 1}"
+
+    return stu_id
+
+
 # Function Prints assessment results 
 # Parameter: Dataframe with access to file
 # Returns: VOID (But probably should return the something)
@@ -137,13 +151,20 @@ def process_assessment(df):
         #Returns list of incorrect questions for current student
         incorrect_questions = get_incorrect_questions(student_row)
 
+        #Returns student id
+        stu_id = get_stu_id(student_row, student)
+
         #Returns list of topics student needs to review
         topics_to_review = get_topics_to_review(incorrect_questions, student_row)
 
+        #Add student Name in topics to review list as index 0
         if first_name is None or last_name is None:
-            result[f"Student #{student + 1}"] = topics_to_review
+            topics_to_review.insert(0, "f_name and l_name")
         else:
-            result[f"{first_name} {last_name}"] = topics_to_review
+            topics_to_review.insert(0, f"{first_name} {last_name}")
+
+        #Adding student id (key) and topics to review (value) in dictionary
+        result[stu_id] = topics_to_review
 
     #FOR TESTING PURPOSES
     for student in result:
