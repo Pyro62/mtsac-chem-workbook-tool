@@ -64,8 +64,6 @@ def get_student_name(student_row):
 def get_incorrect_questions(student_row):
     incorrect_question = []
 
-    #CHANGE 30 LATER IN CASE MORE/LESS QUESTIONS (critical) -===- Completed
-    # TYPO IN EXCEL SPREADSHEET  | "NumbeOfQuestions" has "Numbe" instead of "Number"
     num_of_questions = int(student_row["NumbeOfQuestions"])
     num_correct = student_row["NumberCorrect"]
     
@@ -122,6 +120,24 @@ def get_topics_to_review(student_incorrect_questions, student_row):
 # Parameter: student row and student number (index)
 # Returns: student id string
 def get_stu_id(student_row, student):
+    stu_id = f"Temp ID #{student + 1}" if pd.isna(student_row["ExternalID"]) else student_row["ExternalID"]
+
+
+    return stu_id
+
+
+# Function get student test score
+# Parameter: student row
+# Returns: student test score string
+def get_stu_score(student_row):
+    stu_score = 0 if pd.isna(student_row["PercentCorrect"]) else student_row["PercentCorrect"]
+    stu_score = f"{stu_score}%"
+    return stu_score
+
+# Function get student id
+# Parameter: student row and student number (index)
+# Returns: student id string
+def get_stu_id(student_row, student):
     stu_id = None if pd.isna(student_row["ExternalID"]) else student_row["ExternalID"]
 
     if stu_id is None:
@@ -139,50 +155,58 @@ def process_assessment(df):
     #Get number of students (1 row = 1 student)
     num_students = df.shape[0]
 
-    #student: [topics to review]
+    #Nested dictionary: id --> dictionary (name, score, topics to review)
     result = dict()
 
-    for student in range(num_students): 
+    for student in range(num_students):
+
+        student_information = dict()
 
         #Grabs the information for current student
         student_row = df.iloc[student]
 
-        #Get student's name
+        #Get student's information
         first_name, last_name = get_student_name(student_row)
-        
-        #Returns list of incorrect questions for current student
-        incorrect_questions = get_incorrect_questions(student_row)
-
-        #Returns student id
         stu_id = get_stu_id(student_row, student)
+        stu_score = get_stu_score(student_row)
 
-        #Returns list of topics student needs to review
-        topics_to_review = get_topics_to_review(incorrect_questions, student_row)
+        #Get topics to review for student based on incorrect questions
+        list_of_incorrect_questions = get_incorrect_questions(student_row)
+        topics_to_review = get_topics_to_review(list_of_incorrect_questions, student_row)
 
-        #Add student Name in topics to review list as index 0
-        if first_name is None or last_name is None:
-            topics_to_review.insert(0, "f_name and l_name")
-        else:
-            topics_to_review.insert(0, f"{first_name} {last_name}")
+        #Storing all information of student (name, score, topics to review)
+        student_information["name"] = f"{first_name} {last_name}" if first_name and last_name else "Name Missing"
+        student_information["score"] = stu_score
+        student_information["topics_to_review"] = topics_to_review
 
-        #Adding student id (key) and topics to review (value) in dictionary
-        result[stu_id] = topics_to_review
+        #Adding student id (key) and information (value) in dictionary
+        result[stu_id] = student_information
+
 
     #FOR TESTING PURPOSES
-    for student in result:
-        print(student, result[student])
+    for student_id in result:
+        information = result[student_id]
 
-    print(type(result))
+        print(f"Student ID: {student_id}")
+        print(f"Name: {information['name']}")
+        print(f"Score: {information['score']}")
+        print("Topics to Review:")
+        for topic in information['topics_to_review']:
+            print(f"  - {topic}")
+        print("---Example of what result look like below---")
+        print(information)
+        print("\n")
+
     return result
 
 
 #----------------------USE FOR TESTING--------
 # to test from this file, might need to use "cd mtsac-chem-workbook-tool\backend" to adjust path
-#df = pd.read_excel('../test_data/assessment40.xlsx')
+df = pd.read_excel('../test_data/assessment40.xlsx')
 #df2 = pd.read_excel('../test_data/assessment10.xlsx')
 
-#print("Assessment 1:")
-#process_assessment(df)
+print("Assessment 1:")
+process_assessment(df)
 #print("\nAssessment 2:")
 #process_assessment(df2)
 
