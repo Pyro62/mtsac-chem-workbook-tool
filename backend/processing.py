@@ -122,7 +122,6 @@ def get_topics_to_review(student_incorrect_questions, student_row):
 def get_stu_id(student_row, student):
     stu_id = f"Temp ID #{student + 1}" if pd.isna(student_row["ExternalID"]) else student_row["ExternalID"]
 
-
     return stu_id
 
 
@@ -133,18 +132,6 @@ def get_stu_score(student_row):
     stu_score = 0 if pd.isna(student_row["PercentCorrect"]) else student_row["PercentCorrect"]
     stu_score = f"{stu_score}%"
     return stu_score
-
-# Function get student id
-# Parameter: student row and student number (index)
-# Returns: student id string
-def get_stu_id(student_row, student):
-    stu_id = None if pd.isna(student_row["ExternalID"]) else student_row["ExternalID"]
-
-    if stu_id is None:
-        temp_id = student
-        stu_id = f"Temp ID #{temp_id + 1}"
-
-    return stu_id
 
 
 # Function Prints assessment results 
@@ -180,27 +167,23 @@ def process_assessment(df):
         student_information["topics_to_review"] = topics_to_review
 
         #Adding student id (key) and information (value) in dictionary
+
+        #Student information keys: "name", "score", "topics_to_review"
         result[stu_id] = student_information
 
 
     #FOR TESTING PURPOSES
     for student_id in result:
-        information = result[student_id]
+        stu_information = result[student_id]
 
-        print(f"Student ID: {student_id}")
-        print(f"Name: {information['name']}")
-        print(f"Score: {information['score']}")
-        print("Topics to Review:")
-        for topic in information['topics_to_review']:
-            print(f"  - {topic}")
-        print("---Example of what result look like below---")
-        print(information)
+        print(stu_information)
         print("\n")
+    print(result)
 
     return result
 
 
-#----------------------USE FOR TESTING--------
+#----------------------USE FOR TESTING----------------------
 # to test from this file, might need to use "cd mtsac-chem-workbook-tool\backend" to adjust path
 df = pd.read_excel('../test_data/assessment40.xlsx')
 #df2 = pd.read_excel('../test_data/assessment10.xlsx')
@@ -213,7 +196,6 @@ process_assessment(df)
 
 #Things to figure out later:
 
-#retrieve score for each student and add to the report
 #retrieve stats numbers stuff
 
 
