@@ -178,6 +178,7 @@ def process_assessment(df):
 
         print(stu_information)
         print("\n")
+    print(result)
 
     return result
 
