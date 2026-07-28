@@ -180,27 +180,22 @@ def process_assessment(df):
         student_information["topics_to_review"] = topics_to_review
 
         #Adding student id (key) and information (value) in dictionary
+        
+        #Student information keys: "name", "score", "topics_to_review"
         result[stu_id] = student_information
 
 
     #FOR TESTING PURPOSES
     for student_id in result:
-        information = result[student_id]
+        stu_information = result[student_id]
 
-        print(f"Student ID: {student_id}")
-        print(f"Name: {information['name']}")
-        print(f"Score: {information['score']}")
-        print("Topics to Review:")
-        for topic in information['topics_to_review']:
-            print(f"  - {topic}")
-        print("---Example of what result look like below---")
-        print(information)
+        print(stu_information)
         print("\n")
 
     return result
 
 
-#----------------------USE FOR TESTING--------
+#----------------------USE FOR TESTING----------------------
 # to test from this file, might need to use "cd mtsac-chem-workbook-tool\backend" to adjust path
 df = pd.read_excel('../test_data/assessment40.xlsx')
 #df2 = pd.read_excel('../test_data/assessment10.xlsx')
@@ -213,7 +208,6 @@ process_assessment(df)
 
 #Things to figure out later:
 
-#retrieve score for each student and add to the report
 #retrieve stats numbers stuff
 
 
