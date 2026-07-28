@@ -134,6 +134,36 @@ def get_stu_score(student_row):
     return stu_score
 
 
+# Function gets data for class (Average Scores, Most Missed Topics)
+# Parameter: Dict containing all student's results
+# Returns: Dict with {"missed_topics":list of topics in desc order, "average":float average scores}
+def get_class_data(result_dict):
+    count = len(result_dict)
+    total = 0.0
+
+    #Creates dict that tracks topic appearance count {"2.1":0, "2.2":0,...}
+    topic_count_dict = dict.fromkeys(TOPIC_MAP.keys(), 0)
+
+    # 
+    for student_information in result_dict.values():
+        #Adds flaot to total for average score
+        #Uses string slicing to get rid of % sign
+        total += float(student_information["score"][:-1])
+
+        #Check and Increment all topics for this student
+        for topic in student_information["topics_to_review"]:
+            topic_count_dict[topic.split(":")[0]] += 1
+
+    #Sorted list of tuples by decscending order [("2.7", 9), ("2.3", 8), ("2.2", 7)...]
+    missed_topics = sorted(topic_count_dict.items(), key=lambda item: item[1], reverse=True)
+    average = round(float(total/count), 2)
+
+    class_data = {"missed_topics":missed_topics, "average":average}
+
+    #Returns Dict of {"missed_topics":all topics in descending order, "average":average scores as float}
+    return class_data
+
+
 # Function Prints assessment results 
 # Parameter: Dataframe with access to file
 # Returns: VOID (But probably should return the something)
@@ -172,6 +202,8 @@ def process_assessment(df):
         result[stu_id] = student_information
 
 
+
+
     #FOR TESTING PURPOSES
     for student_id in result:
         stu_information = result[student_id]
@@ -189,9 +221,18 @@ df = pd.read_excel('../test_data/assessment40.xlsx')
 #df2 = pd.read_excel('../test_data/assessment10.xlsx')
 
 print("Assessment 1:")
-process_assessment(df)
+result = process_assessment(df)
 #print("\nAssessment 2:")
 #process_assessment(df2)
+
+# FOR TESTING get_class_data() FUNCTION
+#Get overall class data 
+class_data = get_class_data(result)
+common_missed_topics, class_average = class_data["missed_topics"], class_data["average"]
+print("=====")
+for i in common_missed_topics: print(i)
+print(f'"class_average": {class_average}')
+print("=====")
 
 
 #Things to figure out later:

@@ -2,7 +2,7 @@ from fastapi import FastAPI, File, UploadFile
 from fastapi.middleware.cors import CORSMiddleware
 import os
 from dotenv import load_dotenv
-from processing import process_assessment
+from processing import process_assessment, get_class_data
 import io
 import pandas as pd
 from fastapi.responses import StreamingResponse
@@ -39,6 +39,9 @@ async def download_zip(file: UploadFile = File(...)):
     contents = await file.read()
     df = pd.read_excel(io.BytesIO(contents))
     results = process_assessment(df)
+
+    class_data = get_class_data(results)
+    missed_topics, class_average = class_data["missed_topics"], class_data["average"]
     
     zip_buffer = await file_generator(results, file.filename)
     
