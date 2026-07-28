@@ -40,7 +40,7 @@ async def download_zip(file: UploadFile = File(...)):
     df = pd.read_excel(io.BytesIO(contents))
     results = process_assessment(df)
     
-    zip_buffer = file_generator(results)
+    zip_buffer = await file_generator(results, file.filename)
     
     return StreamingResponse(
         zip_buffer,
