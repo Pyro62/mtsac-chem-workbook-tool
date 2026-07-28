@@ -122,7 +122,6 @@ def get_topics_to_review(student_incorrect_questions, student_row):
 def get_stu_id(student_row, student):
     stu_id = f"Temp ID #{student + 1}" if pd.isna(student_row["ExternalID"]) else student_row["ExternalID"]
 
-
     return stu_id
 
 
@@ -133,18 +132,6 @@ def get_stu_score(student_row):
     stu_score = 0 if pd.isna(student_row["PercentCorrect"]) else student_row["PercentCorrect"]
     stu_score = f"{stu_score}%"
     return stu_score
-
-# Function get student id
-# Parameter: student row and student number (index)
-# Returns: student id string
-def get_stu_id(student_row, student):
-    stu_id = None if pd.isna(student_row["ExternalID"]) else student_row["ExternalID"]
-
-    if stu_id is None:
-        temp_id = student
-        stu_id = f"Temp ID #{temp_id + 1}"
-
-    return stu_id
 
 
 # Function Prints assessment results 
@@ -180,7 +167,7 @@ def process_assessment(df):
         student_information["topics_to_review"] = topics_to_review
 
         #Adding student id (key) and information (value) in dictionary
-        
+
         #Student information keys: "name", "score", "topics_to_review"
         result[stu_id] = student_information
 
