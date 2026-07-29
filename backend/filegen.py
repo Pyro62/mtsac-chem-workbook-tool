@@ -1,46 +1,8 @@
 import io
-import threading
 import gc
 import zipfile
-from concurrent.futures import ThreadPoolExecutor
 from playwright.sync_api import sync_playwright
 from processing import TOPIC_MAP
-MAX_THREAD_WORKERS = 3
-# Thread-local storage to hold per-thread browser instances safely
-_thread_local = threading.local()
-
-def get_thread_browser():
-    # basically check if thread has a browser instance, if not then start one
-    if not hasattr(_thread_local, "browser") or _thread_local.browser is None: 
-        _thread_local.playwright = sync_playwright().start() # if no browser, sure start one up
-        _thread_local.browser = _thread_local.playwright.chromium.launch(
-            headless=True,
-            args=["--no-sandbox", "--disable-dev-shm-usage"]
-        )
-    return _thread_local.browser # else return the browser it has
-
-def generate_single_student_pdf(item):
-    """Worker function that runs across multiple worker threads in parallel."""
-    student_id, test_results = item
-    file_content = generate_html(student_id, test_results)
-    
-    # Each thread fetches its own cached browser instance
-    browser = get_thread_browser()
-    page = browser.new_page()
-    page.set_content(file_content)
-    pdf_bytes = page.pdf(
-        format="A4",
-        print_background=True,
-        margin={"top": "15mm", "bottom": "15mm", "left": "15mm", "right": "15mm"}
-    )
-    page.close()
-    
-    raw_name = test_results.get('name', 'Student')
-    safe_name = raw_name.replace(' ', '_').replace('/', '_')
-    safe_id = str(student_id).replace(' ', '_').replace('/', '_')
-    filename = f"{safe_name}_{safe_id}_review.pdf"
-    
-    return filename, pdf_bytes
 
 def generate_html(student_id: str, test_results: dict) -> str:
     name = test_results.get("name", "Student")
@@ -176,13 +138,18 @@ def file_generator_sync(results, filename, class_data):
         browser = p.chromium.launch(
             headless=True,
             args=[
-                "--no-sandbox",
+               "--no-sandbox",
                 "--disable-dev-shm-usage",
                 "--disable-gpu",
-                "--single-process",            # Merges browser processes into 1 thread
-                "--no-zygote",
+                "--single-process",
                 "--disable-extensions",
-                "--disable-background-networking"
+                "--disable-component-update",
+                "--disable-background-networking",
+                "--disable-sync",
+                "--metrics-recording-only",
+                "--disable-default-apps",
+                "--no-first-run",
+                "--mute-audio"
             ]
         )
         page = browser.new_page()
