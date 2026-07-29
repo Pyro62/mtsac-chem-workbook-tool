@@ -42,9 +42,9 @@ async def download_zip(file: UploadFile = File(...)):
     results = process_assessment(df)
 
     class_data = get_class_data(results)
-    missed_topics, class_average = class_data["missed_topics"], class_data["average"]
+
     # todo, pass it in    
-    zip_buffer = await asyncio.to_thread(file_generator_sync, results, file.filename)
+    zip_buffer = await asyncio.to_thread(file_generator_sync, results, file.filename, class_data)
     
     return StreamingResponse(
         zip_buffer,
