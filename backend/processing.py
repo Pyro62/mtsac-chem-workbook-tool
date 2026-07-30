@@ -31,27 +31,6 @@ def get_student_name(student_row):
     # Get First/Last Name
     first_name = None if pd.isna(student_row["FirstName"]) else student_row["FirstName"]
     last_name = None if pd.isna(student_row["LastName"]) else student_row["LastName"]
-
-    # Check if valid names, return with error if not
-    if first_name == None or last_name == None:    # If either or both first or last is empty
-
-        # Stores student record number for error output
-        record_number = student_row.name+1
-        
-        # BOTH names are empty
-        if first_name == None and last_name == None:
-            print(f"ERROR -==- Both First Name and Last Name are EMPTY for record #{record_number}")
-            
-        # First name only is empty
-        elif first_name == None:
-            print(f"ERROR -==- First Name is EMPTY for record #{record_number}")
-            
-        # Last name only is empty
-        elif last_name == None:
-            print(f"ERROR -==- Last Name is EMPTY for record #{record_number}")
-            
-        # # UNCOMMENT AND CHANGE HERE IF SPECIFIC ERROR OUTPUT DESIRED | OTHERWISE OUTPUT IS (None, None)
-        return (first_name, last_name)
     
     # Returns First and Last name as tuple (First, Last)
     full_name = (first_name, last_name)
@@ -204,38 +183,6 @@ def process_assessment(df):
 
 
 
-    #FOR TESTING PURPOSES
-    for student_id in result:
-        stu_information = result[student_id]
-
-        print(stu_information)
-        print("\n")
-    print(result)
 
     return result
-
-
-#---------------------------------------------------USE FOR TESTING---------------------------------------------------------
-# to test from this file, might need to use "cd mtsac-chem-workbook-tool\backend" to adjust path
-df = pd.read_excel('../test_data/assessment40.xlsx')
-#df2 = pd.read_excel('../test_data/assessment10.xlsx')
-
-print("Assessment 1:")
-result = process_assessment(df)
-#print("\nAssessment 2:")
-#process_assessment(df2)
-
-# FOR TESTING get_class_data() FUNCTION
-#Get overall class data 
-class_data = get_class_data(result)
-common_missed_topics, class_average = class_data["missed_topics"], class_data["average"]
-print("=====")
-for i in common_missed_topics: print(i)
-print(f'"class_average": {class_average}')
-print("=====")
-
-
-#Things to figure out later:
-
-
 
