@@ -215,7 +215,7 @@ def process_assessment(df):
     return result
 
 
-#----------------------USE FOR TESTING----------------------
+#---------------------------------------------------USE FOR TESTING---------------------------------------------------------
 # to test from this file, might need to use "cd mtsac-chem-workbook-tool\backend" to adjust path
 df = pd.read_excel('../test_data/assessment40.xlsx')
 #df2 = pd.read_excel('../test_data/assessment10.xlsx')
@@ -237,6 +237,5 @@ print("=====")
 
 #Things to figure out later:
 
-#retrieve stats numbers stuff
 
 
