@@ -181,8 +181,5 @@ def process_assessment(df):
         result[stu_id] = student_information
 
 
-
-
-
     return result
 
