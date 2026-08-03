@@ -99,7 +99,7 @@ def get_topics_to_review(student_incorrect_questions, student_row):
 # Parameter: student row and student number (index)
 # Returns: student id string
 def get_stu_id(student_row, student):
-    stu_id = f"Temp ID #{student + 1}" if pd.isna(student_row["ExternalID"]) else student_row["ExternalID"]
+    stu_id = f"Temp ID #{student + 1}" if pd.isna(student_row["ZipGradeID"]) else student_row["ZipGradeID"]
 
     return stu_id
 
