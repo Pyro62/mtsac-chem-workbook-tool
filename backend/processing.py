@@ -26,15 +26,18 @@ TOPIC_MAP = {
     "2.17": "Log and Inverse Log Functions"
 }
 
-def get_student_name(student_row):
+def get_student_name(student_info_df, num_stu):
 
-    # Get First/Last Name
-    first_name = None if pd.isna(student_row["FirstName"]) else student_row["FirstName"]
-    last_name = None if pd.isna(student_row["LastName"]) else student_row["LastName"]
-    
-    # Returns First and Last name as tuple (First, Last)
-    full_name = (first_name, last_name)
-    return full_name
+    # Maps name to id: {id: name}
+    id_name = dict()
+    row_idx = student_info_df[student_info_df[0] == 'Student Name'].index[0] + 1
+    for stu in range(num_stu):
+        id = student_info_df.iloc[row_idx, 1]
+        name = student_info_df.iloc[row_idx, 0]
+        id_name[id] = name
+        row_idx += 1
+    return id_name
+
     
 
 # Function that iterates on a student row; looks specifically at missed points; save incorrect questions into list
@@ -99,7 +102,7 @@ def get_topics_to_review(student_incorrect_questions, student_row):
 # Parameter: student row and student number (index)
 # Returns: student id string
 def get_stu_id(student_row, student):
-    stu_id = f"Temp ID #{student + 1}" if pd.isna(student_row["ExternalID"]) else student_row["ExternalID"]
+    stu_id = f"Temp ID #{student + 1}" if pd.isna(student_row["ZipGradeID"]) else student_row["ZipGradeID"]
 
     return stu_id
 
@@ -146,10 +149,13 @@ def get_class_data(result_dict):
 # Function Prints assessment results 
 # Parameter: Dataframe with access to file
 # Returns: VOID (But probably should return the something)
-def process_assessment(df):
+def process_assessment(test_df, student_info_df = None):
 
     #Get number of students (1 row = 1 student)
-    num_students = df.shape[0]
+    num_students = test_df.shape[0]
+
+    #Get student names mapped to their IDs
+    id_name_map = get_student_name(student_info_df, num_students) if student_info_df is not None else dict()
 
     #Nested dictionary: id --> dictionary (name, score, topics to review)
     result = dict()
@@ -159,11 +165,11 @@ def process_assessment(df):
         student_information = dict()
 
         #Grabs the information for current student
-        student_row = df.iloc[student]
+        student_row = test_df.iloc[student]
 
         #Get student's information
-        first_name, last_name = get_student_name(student_row)
         stu_id = get_stu_id(student_row, student)
+        name = id_name_map.get(f"A0{stu_id}", "Chemistry Student") 
         stu_score = get_stu_score(student_row)
 
         #Get topics to review for student based on incorrect questions
@@ -171,7 +177,7 @@ def process_assessment(df):
         topics_to_review = get_topics_to_review(list_of_incorrect_questions, student_row)
 
         #Storing all information of student (name, score, topics to review)
-        student_information["name"] = f"{first_name} {last_name}" if first_name and last_name else "Name Missing"
+        student_information["name"] = name
         student_information["score"] = stu_score
         student_information["topics_to_review"] = topics_to_review
 
@@ -181,8 +187,17 @@ def process_assessment(df):
         result[stu_id] = student_information
 
 
-
-
-
     return result
+
+student_info_df = pd.read_excel('../test_data/classList.xls', header = None)
+test_df = pd.read_excel('../test_data/newAssessment.xlsx')
+
+result = process_assessment(test_df, student_info_df)
+
+for student in result:
+    print(f"Student ID: {student}")
+    print(f"Name: {result[student]['name']}")
+    print(f"Score: {result[student]['score']}")
+    print(f"Topics to Review: {result[student]['topics_to_review']}")
+    print()
 
