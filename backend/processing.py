@@ -26,15 +26,21 @@ TOPIC_MAP = {
     "2.17": "Log and Inverse Log Functions"
 }
 
-def get_student_name(student_row):
+def get_student_name(df, num_stu):
 
-    # Get First/Last Name
-    first_name = None if pd.isna(student_row["FirstName"]) else student_row["FirstName"]
-    last_name = None if pd.isna(student_row["LastName"]) else student_row["LastName"]
-    
-    # Returns First and Last name as tuple (First, Last)
-    full_name = (first_name, last_name)
-    return full_name
+    # Maps name to id: {id: name}
+    id_name = dict()
+
+    row_idx = df[df[0] == 'Student Name'].index[0] + 1
+
+    for stu in range(num_stu):
+        id = df.iloc[row_idx, 1]
+        name = df.iloc[row_idx, 0]
+        id_name[id] = name
+        row_idx += 1
+
+    return id_name
+
     
 
 # Function that iterates on a student row; looks specifically at missed points; save incorrect questions into list
@@ -183,3 +189,15 @@ def process_assessment(df):
 
     return result
 
+df = pd.read_excel('../test_data/classList.xls', header = None)
+test = get_student_name(df, 2)
+print(test)
+'''
+result = process_assessment(df)
+for stu in result:
+    print(f"Student ID: {stu}")
+    print(f"Name: {result[stu]['name']}")
+    print(f"Score: {result[stu]['score']}")
+    print(f"Topics to Review: {result[stu]['topics_to_review']}")
+    print()
+'''
