@@ -149,13 +149,13 @@ def get_class_data(result_dict):
 # Function Prints assessment results 
 # Parameter: Dataframe with access to file
 # Returns: VOID (But probably should return the something)
-def process_assessment(test_df, student_info_df):
+def process_assessment(test_df, student_info_df = None):
 
     #Get number of students (1 row = 1 student)
     num_students = test_df.shape[0]
 
     #Get student names mapped to their IDs
-    id_name_map = get_student_name(student_info_df, num_students)
+    id_name_map = get_student_name(student_info_df, num_students) if student_info_df is not None else dict()
 
     #Nested dictionary: id --> dictionary (name, score, topics to review)
     result = dict()
@@ -169,7 +169,7 @@ def process_assessment(test_df, student_info_df):
 
         #Get student's information
         stu_id = get_stu_id(student_row, student)
-        name = id_name_map.get(f"A0{stu_id}", "Name Missing") 
+        name = id_name_map.get(f"A0{stu_id}", "Chemistry Student") 
         stu_score = get_stu_score(student_row)
 
         #Get topics to review for student based on incorrect questions
@@ -194,9 +194,10 @@ test_df = pd.read_excel('../test_data/newAssessment.xlsx')
 
 result = process_assessment(test_df, student_info_df)
 
-for stu in result:
-    print(f"Student ID: {stu}")
-    print(f"Name: {result[stu]['name']}")
-    print(f"Score: {result[stu]['score']}")
-    print(f"Topics to Review: {result[stu]['topics_to_review']}")
+for student in result:
+    print(f"Student ID: {student}")
+    print(f"Name: {result[student]['name']}")
+    print(f"Score: {result[student]['score']}")
+    print(f"Topics to Review: {result[student]['topics_to_review']}")
     print()
+
