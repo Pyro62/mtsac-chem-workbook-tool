@@ -2,20 +2,28 @@ import { useState } from 'react'
 import './App.css';
 
 function App() {
-  const [file, setFile] = useState(null)
+  const [testFile, setTestFile] = useState(null)
+  const [studentFile, setStudentFile] = useState(null)
   const [result, setResult] = useState(null)
   const [loading, setLoading] = useState(false)
 
-  const handleFileChange = (e) => {
+  const handleTestFileChange = (e) => {
     if (e.target.files) {
-      setFile(e.target.files[0])
+      setTestFile(e.target.files[0])
+    }
+  }
+
+  const handleStudentFileChange = (e) => {
+    if (e.target.files) {
+      setStudentFile(e.target.files[0])
     }
   }
 
   const handleUpload = async () => {
     setLoading(true);
     const formData = new FormData();
-    formData.append('file', file);
+    formData.append('test_file', testFile);
+    formData.append('student_file', studentFile);
 
     const response = await fetch('/api/download-zip', { method: 'POST', body: formData });
 
@@ -40,26 +48,35 @@ function App() {
 
   return (
     <div>
-      {/*top header bar*/ }
       <header className="app-header">
         <h1>Mt. SAC Chem Workbook Tool</h1>
       </header>
 
-      {/* Centered card */}
       <div className="content-container">
         <div className="boarder-all" style={{ textAlign: 'center' }}>
           <h2 style={{ marginTop: 0, color: '#333' }}>Assessment Processor</h2>
           
           <div className="wr-input-control">
+            <label>Assessment File</label>
             <input 
               type="file" 
               accept=".xlsx, .xls" 
-              onChange={handleFileChange} 
+              onChange={handleTestFileChange} 
               disabled={loading}
             />
           </div>
 
-          <button className="wr-btn" onClick={handleUpload} disabled={loading || !file}>
+          <div className="wr-input-control">
+            <label>Student Info File</label>
+            <input 
+              type="file" 
+              accept=".xlsx, .xls" 
+              onChange={handleStudentFileChange} 
+              disabled={loading}
+            />
+          </div>
+
+          <button className="wr-btn" onClick={handleUpload} disabled={loading || !testFile || !studentFile}>
             {loading ? 'Processing Spreadsheet...' : 'Upload & Process'}
           </button>
 
