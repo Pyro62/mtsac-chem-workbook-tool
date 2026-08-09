@@ -33,9 +33,18 @@ def get_student_name(student_info_df, num_stu):
     row_idx = student_info_df[student_info_df[0] == 'Student Name'].index[0] + 1
     for stu in range(num_stu):
         id = student_info_df.iloc[row_idx, 1]
+
+        # Get student name from the row, format as "First L."
         name = student_info_df.iloc[row_idx, 0]
+        last, rest = name.split(", ")
+        first = rest.split()[0]
+        name = f"{first} {last[0]}."
+
         id_name[id] = name
+
+        # Increment row index to move to the next student
         row_idx += 1
+
     return id_name
 
     
