@@ -35,16 +35,19 @@ async def read_root():
             }
 
 @app.post("/download-zip")
-async def download_zip(file: UploadFile = File(...)):
+async def download_zip(test_file: UploadFile = File(...), student_file: UploadFile = File(...)):
     #process and return a downloadable ZIP
-    contents = await file.read()
-    df = pd.read_excel(io.BytesIO(contents))
-    results = process_assessment(df)
+    test_contents = await test_file.read()
+    student_contents = await student_file.read()
+    
+    test_df = pd.read_excel(io.BytesIO(test_contents))
+    student_info_df = pd.read_excel(io.BytesIO(student_contents), header = None)
 
+    results = process_assessment(test_df, student_info_df)
     class_data = get_class_data(results)
 
     # todo, pass it in    
-    zip_buffer = await asyncio.to_thread(file_generator_sync, results, file.filename, class_data)
+    zip_buffer = await asyncio.to_thread(file_generator_sync, results, test_file.filename, class_data)
     
     return StreamingResponse(
         zip_buffer,
