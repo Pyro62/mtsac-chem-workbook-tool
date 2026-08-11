@@ -178,7 +178,7 @@ def process_assessment(test_df, student_info_df = None):
 
         #Get student's information
         stu_id = f"A0{get_stu_id(student_row, student)}"
-        name = id_name_map.get(f"A0{stu_id}", "Chemistry Student") 
+        name = id_name_map.get(stu_id, "Chemistry Student") 
         stu_score = get_stu_score(student_row)
 
         #Get topics to review for student based on incorrect questions
