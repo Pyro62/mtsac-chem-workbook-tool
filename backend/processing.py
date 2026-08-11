@@ -1,4 +1,5 @@
 import pandas as pd
+from fastapi import HTTPException
 
 
 # Function that gets student First and Last name and checks if valid
@@ -160,7 +161,7 @@ def validate_test_df(test_df):
     required_columns = ["QuizName", "QuizClass", "ZipGradeID"]
     for column in required_columns:
         if column not in test_df.columns:
-            raise ValueError("Student Assessment File is Invalid")
+            raise HTTPException(status_code=400, detail=f"Invalid Student Assessment File")
     return True
 
 
