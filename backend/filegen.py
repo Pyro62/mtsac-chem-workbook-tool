@@ -3,13 +3,35 @@ import gc
 import zipfile
 from playwright.sync_api import sync_playwright
 from processing import TOPIC_MAP
+import base64
+import urllib.request
+MASCOT_IMAGE_URL = "https://i.ibb.co/spH9N6XS/assessment-image.png"
 
-def generate_html(student_id: str, test_results: dict) -> str:
+def get_image_base64(url_or_path: str) -> str:
+    """Fetch image from local path or web URL and convert to Base64 URI."""
+    try:
+        if url_or_path.startswith("http://") or url_or_path.startswith("https://"):
+            req = urllib.request.Request(url_or_path, headers={'User-Agent': 'Mozilla/5.0'})
+            with urllib.request.urlopen(req) as response:
+                img_data = response.read()
+        else:
+            with open(url_or_path, "rb") as f:
+                img_data = f.read()
+        
+        encoded = base64.b64encode(img_data).decode("utf-8")
+        return f"data:image/png;base64,{encoded}"
+    except Exception as e:
+        print(f"Warning: Could not load image {url_or_path}: {e}")
+        return ""
+
+def generate_html(student_id: str, test_results: dict, image_src: str) -> str:
     name = test_results.get("name", "Student")
     if name == "Name Missing":
         name = f"Student ({student_id})"
 
     topics = test_results.get("topics_to_review", [])
+
+    mascot_html = f'<img src="{image_src}" class="mascot-img" alt="Mascot" />'
 
     if topics:
         # Convert topic codes (e.g. "2.3") into full titles using TOPIC_MAP
@@ -101,6 +123,12 @@ def generate_html(student_id: str, test_results: dict) -> str:
                 font-weight: 700;
                 margin-bottom: 4px;
             }}
+            .mascot-img {{
+                width: 100px;
+                height: 100px;
+                object-fit: contain;
+                flex-shrink: 0;
+            }}
         </style>
     </head>
     <body>
@@ -127,7 +155,7 @@ def generate_html(student_id: str, test_results: dict) -> str:
             <div class="recommend-text">
                 <p>Based on your pre-assessment results, we recommend that you work through the following sections in the workbook:</p>
             </div>
-            <div class="mascot-placeholder">[mascot image here]</div>
+            {mascot_html}
         </div>
 
         <div class="sections-box">
@@ -142,6 +170,8 @@ def generate_html(student_id: str, test_results: dict) -> str:
 
 def file_generator_sync(results, filename, class_data):
     zip_buffer = io.BytesIO()
+
+    mascot_b64 = get_image_base64(MASCOT_IMAGE_URL)
 
     # 1. Calculate class statistics
     total_students = len(results)
@@ -181,7 +211,7 @@ def file_generator_sync(results, filename, class_data):
 
             # --- Render Each Student Sequentially ---
             for student_id, test_results in results.items():
-                html = generate_html(student_id, test_results)
+                html = generate_html(student_id, test_results, image_src=mascot_b64)
 
                 page.set_content(html)
                 pdf_bytes = page.pdf(
