@@ -177,7 +177,7 @@ def process_assessment(test_df, student_info_df = None):
         student_row = test_df.iloc[student]
 
         #Get student's information
-        stu_id = get_stu_id(student_row, student)
+        stu_id = f"A0{get_stu_id(student_row, student)}"
         name = id_name_map.get(f"A0{stu_id}", "Chemistry Student") 
         stu_score = get_stu_score(student_row)
 
@@ -198,7 +198,7 @@ def process_assessment(test_df, student_info_df = None):
 
     return result
 
-'''student_info_df = pd.read_excel('../test_data/classList.xls', header = None)
+student_info_df = pd.read_excel('../test_data/classList.xls', header = None)
 test_df = pd.read_excel('../test_data/newAssessment.xlsx')
 
 result = process_assessment(test_df, student_info_df)
@@ -209,4 +209,4 @@ for student in result:
     print(f"Score: {result[student]['score']}")
     print(f"Topics to Review: {result[student]['topics_to_review']}")
     print()
-'''
+
