@@ -155,11 +155,24 @@ def get_class_data(result_dict):
     return class_data
 
 
+def validate_test_df(test_df):
+    # Check if required columns exist in the dataframe
+    required_columns = ["QuizName", "QuizClass", "ZipGradeID"]
+    for column in required_columns:
+        if column not in test_df.columns:
+            return False
+    return True
+
+
 # Function Prints assessment results 
 # Parameter: Dataframe with access to file
 # Returns: VOID (But probably should return the something)
 def process_assessment(test_df, student_info_df = None):
 
+    # Validate test dataframe
+    if not validate_test_df(test_df):
+        return False
+    
     #Get number of students (1 row = 1 student)
     num_students = test_df.shape[0]
 
@@ -199,8 +212,7 @@ def process_assessment(test_df, student_info_df = None):
     return result
 
 #student_info_df = pd.read_excel('../test_data/classList.xls', header = None)
-test_df = pd.read_excel('../test_data/newAssessment.xlsx')
-print("QuizClass" in test_df.columns)
+#test_df = pd.read_excel('../test_data/newAssessment.xlsx')
 
 #result = process_assessment(test_df, student_info_df)
 
