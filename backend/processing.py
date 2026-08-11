@@ -1,4 +1,5 @@
 import pandas as pd
+from fastapi import HTTPException
 
 
 # Function that gets student First and Last name and checks if valid
@@ -155,11 +156,23 @@ def get_class_data(result_dict):
     return class_data
 
 
+def validate_test_df(test_df):
+    # Check if required columns exist in the dataframe
+    required_columns = ["QuizName", "QuizClass", "ZipGradeID"]
+    for column in required_columns:
+        if column not in test_df.columns:
+            raise HTTPException(status_code=400, detail=f"Invalid Student Assessment File")
+    return True
+
+
 # Function Prints assessment results 
 # Parameter: Dataframe with access to file
 # Returns: VOID (But probably should return the something)
 def process_assessment(test_df, student_info_df = None):
 
+    # Validate test dataframe
+    validate_test_df(test_df)
+    
     #Get number of students (1 row = 1 student)
     num_students = test_df.shape[0]
 
@@ -177,8 +190,8 @@ def process_assessment(test_df, student_info_df = None):
         student_row = test_df.iloc[student]
 
         #Get student's information
-        stu_id = get_stu_id(student_row, student)
-        name = id_name_map.get(f"A0{stu_id}", "Chemistry Student") 
+        stu_id = f"A0{get_stu_id(student_row, student)}"
+        name = id_name_map.get(stu_id, "Chemistry Student") 
         stu_score = get_stu_score(student_row)
 
         #Get topics to review for student based on incorrect questions
@@ -198,12 +211,12 @@ def process_assessment(test_df, student_info_df = None):
 
     return result
 
-'''student_info_df = pd.read_excel('../test_data/classList.xls', header = None)
-test_df = pd.read_excel('../test_data/newAssessment.xlsx')
+#student_info_df = pd.read_excel('../test_data/classList.xls', header = None)
+#test_df = pd.read_excel('../test_data/newAssessment.xlsx')
 
-result = process_assessment(test_df, student_info_df)
+#result = process_assessment(test_df, student_info_df)
 
-for student in result:
+'''for student in result:
     print(f"Student ID: {student}")
     print(f"Name: {result[student]['name']}")
     print(f"Score: {result[student]['score']}")
