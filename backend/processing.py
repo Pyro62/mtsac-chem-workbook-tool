@@ -198,15 +198,16 @@ def process_assessment(test_df, student_info_df = None):
 
     return result
 
-student_info_df = pd.read_excel('../test_data/classList.xls', header = None)
+#student_info_df = pd.read_excel('../test_data/classList.xls', header = None)
 test_df = pd.read_excel('../test_data/newAssessment.xlsx')
+print("QuizClass" in test_df.columns)
 
-result = process_assessment(test_df, student_info_df)
+#result = process_assessment(test_df, student_info_df)
 
-for student in result:
+'''for student in result:
     print(f"Student ID: {student}")
     print(f"Name: {result[student]['name']}")
     print(f"Score: {result[student]['score']}")
     print(f"Topics to Review: {result[student]['topics_to_review']}")
     print()
-
+'''
