@@ -1,4 +1,4 @@
-from fastapi import FastAPI, File, UploadFile
+from fastapi import FastAPI, File, UploadFile, Form
 from fastapi.middleware.cors import CORSMiddleware
 import os
 from dotenv import load_dotenv
@@ -35,7 +35,10 @@ async def read_root():
             }
 
 @app.post("/download-zip")
-async def download_zip(test_file: UploadFile = File(...), student_file: UploadFile = File(...)):
+async def download_zip(test_file: UploadFile = File(...),
+                        student_file: UploadFile = File(...),
+                        concatenate_files: bool = Form(False),
+                        print_ready: bool = Form(False)):
     #process and return a downloadable ZIP
     test_contents = await test_file.read()
     student_contents = await student_file.read()
@@ -47,7 +50,7 @@ async def download_zip(test_file: UploadFile = File(...), student_file: UploadFi
     class_data = get_class_data(results)
 
     # todo, pass it in    
-    zip_buffer = await asyncio.to_thread(file_generator_sync, results, test_file.filename, class_data)
+    zip_buffer = await asyncio.to_thread(file_generator_sync, results, test_file.filename, class_data, concatenate_files, print_ready)
     
     return StreamingResponse(
         zip_buffer,
