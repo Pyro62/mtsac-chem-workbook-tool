@@ -160,7 +160,7 @@ def validate_test_df(test_df):
     required_columns = ["QuizName", "QuizClass", "ZipGradeID"]
     for column in required_columns:
         if column not in test_df.columns:
-            return False
+            raise ValueError("Student Assessment File is Invalid")
     return True
 
 
@@ -170,8 +170,7 @@ def validate_test_df(test_df):
 def process_assessment(test_df, student_info_df = None):
 
     # Validate test dataframe
-    if not validate_test_df(test_df):
-        return False
+    validate_test_df(test_df)
     
     #Get number of students (1 row = 1 student)
     num_students = test_df.shape[0]
