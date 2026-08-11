@@ -1,6 +1,7 @@
 from fastapi import FastAPI, File, UploadFile, Form
 from fastapi.middleware.cors import CORSMiddleware
 import os
+from typing import Optional
 from dotenv import load_dotenv
 from processing import process_assessment, get_class_data
 import io
@@ -36,15 +37,20 @@ async def read_root():
 
 @app.post("/download-zip")
 async def download_zip(test_file: UploadFile = File(...),
-                        student_file: UploadFile = File(...),
+                        student_file: Optional[UploadFile] = File(None),
                         concatenate_files: bool = Form(False),
                         print_ready: bool = Form(False)):
     #process and return a downloadable ZIP
     test_contents = await test_file.read()
-    student_contents = await student_file.read()
+    student_contents = None
+    if student_file is not None:
+        student_contents = await student_file.read()
     
     test_df = pd.read_excel(io.BytesIO(test_contents))
-    student_info_df = pd.read_excel(io.BytesIO(student_contents), header = None)
+    student_info_df = None
+    if student_file is not None:
+        student_contents = await student_file.read()
+        student_info_df = pd.read_excel(io.BytesIO(student_contents), header=None)
 
     results = process_assessment(test_df, student_info_df)
     class_data = get_class_data(results)
