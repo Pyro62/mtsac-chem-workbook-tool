@@ -3,19 +3,44 @@ import gc
 import zipfile
 from playwright.sync_api import sync_playwright
 from processing import TOPIC_MAP
+import base64
+import urllib.request
+MASCOT_IMAGE_URL = "https://i.ibb.co/spH9N6XS/assessment-image.png"
 
-def generate_html(student_id: str, test_results: dict) -> str:
+def get_image_base64(url_or_path: str) -> str:
+    """Fetch image from local path or web URL and convert to Base64 URI."""
+    try:
+        if url_or_path.startswith("http://") or url_or_path.startswith("https://"):
+            req = urllib.request.Request(url_or_path, headers={'User-Agent': 'Mozilla/5.0'})
+            with urllib.request.urlopen(req) as response:
+                img_data = response.read()
+        else:
+            with open(url_or_path, "rb") as f:
+                img_data = f.read()
+        
+        encoded = base64.b64encode(img_data).decode("utf-8")
+        return f"data:image/png;base64,{encoded}"
+    except Exception as e:
+        print(f"Warning: Could not load image {url_or_path}: {e}")
+        return ""
+
+def generate_html(student_id: str, test_results: dict, image_src: str) -> str:
     name = test_results.get("name", "Student")
     if name == "Name Missing":
         name = f"Student ({student_id})"
 
-    score = test_results.get("score", "N/A")
     topics = test_results.get("topics_to_review", [])
 
+    mascot_html = f'<img src="{image_src}" class="mascot-img" alt="Mascot" />'
+
     if topics:
-        topics_html = "".join([f'<li class="topic-item">{topic}</li>' for topic in topics])
+        # Convert topic codes (e.g. "2.3") into full titles using TOPIC_MAP
+        sections_html = "".join([
+            f'<li class="section-item">{TOPIC_MAP.get(code, code)}</li>'
+            for code in topics
+        ])
     else:
-        topics_html = '<li class="no-topics">Great job! No topics require review at this time.</li>'
+        sections_html = '<li class="no-sections">No specific sections needed — you\'re all caught up!</li>'
 
     return f"""
     <!DOCTYPE html>
@@ -28,106 +53,125 @@ def generate_html(student_id: str, test_results: dict) -> str:
                 font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
                 color: #1f2937;
                 background-color: #ffffff;
-                padding: 24px;
-                line-height: 1.5;
+                padding: 48px 56px;
+                line-height: 1.6;
+                font-size: 14px;
             }}
-            .header {{
-                border-bottom: 3px solid #2563eb;
-                padding-bottom: 16px;
+            p {{ margin-bottom: 16px; }}
+            .highlight {{
+                background-color: #fff9a8;
+                font-weight: 600;
+            }}
+            .resource-list {{
+                list-style: none;
+                padding-left: 0;
+                margin-bottom: 16px;
+            }}
+            .resource-list li {{
+                padding-left: 24px;
+                position: relative;
+                margin-bottom: 6px;
+            }}
+            .resource-list li .num {{
+                position: absolute;
+                left: 0;
+                font-weight: 600;
+            }}
+            .encouragement {{
                 margin-bottom: 24px;
             }}
-            .header h1 {{ font-size: 24px; color: #1e3a8a; margin-bottom: 4px; }}
-            .header p {{ font-size: 13px; color: #6b7280; text-transform: uppercase; letter-spacing: 0.5px; }}
-            .student-card {{
-                background-color: #f8fafc;
-                border: 1px solid #e2e8f0;
-                border-radius: 8px;
-                padding: 20px;
-                margin-bottom: 28px;
+            .recommend-block {{
                 display: flex;
                 justify-content: space-between;
-                align-items: center;
-            }}
-            .info-label {{ font-size: 11px; text-transform: uppercase; color: #64748b; margin-bottom: 2px; }}
-            .info-value {{ font-size: 18px; font-weight: 600; color: #0f172a; }}
-            .score-badge {{
-                background-color: #dbeafe;
-                color: #1e40af;
-                font-size: 20px;
-                font-weight: 700;
-                padding: 6px 16px;
-                border-radius: 20px;
-            }}
-            .section-title {{
-                font-size: 16px;
-                font-weight: 600;
-                color: #334155;
-                margin-bottom: 12px;
-                border-bottom: 1px solid #e2e8f0;
-                padding-bottom: 6px;
-            }}
-            .topics-list {{ list-style: none; padding-left: 0; }}
-            .topic-item {{
-                font-size: 14px;
-                color: #334155;
-                padding: 10px 12px;
+                align-items: flex-start;
+                gap: 24px;
                 margin-bottom: 8px;
-                background-color: #ffffff;
-                border: 1px solid #cbd5e1;
-                border-left: 4px solid #2563eb;
-                border-radius: 4px;
             }}
-            .no-topics {{
-                font-size: 14px;
-                color: #166534;
-                background-color: #f0fdf4;
-                border: 1px solid #bbf7d0;
-                padding: 12px;
-                border-radius: 4px;
-            }}
-            .footer {{
-                margin-top: 40px;
-                border-top: 1px solid #f1f5f9;
-                padding-top: 12px;
+            .recommend-text {{ flex: 1; }}
+            .mascot-placeholder {{
+                width: 100px;
+                height: 100px;
+                border: 1px dashed #cbd5e1;
+                border-radius: 8px;
+                display: flex;
+                align-items: center;
+                justify-content: center;
                 font-size: 11px;
                 color: #94a3b8;
                 text-align: center;
+                flex-shrink: 0;
+            }}
+            .sections-box {{
+                text-align: left;
+                margin: 20px 0 28px;
+            }}
+            .section-item {{
+                display: block;
+                font-weight: 400;
+                font-size: 15px;
+                margin-bottom: 6px;
+                max-width: 100%;
+                word-wrap: break-word;
+                overflow-wrap: break-word;
+            }}
+            .no-sections {{
+                display: block;
+                font-weight: 600;
+                color: #166534;
+            }}
+            .signoff {{
+                font-weight: 700;
+                margin-bottom: 4px;
+            }}
+            .mascot-img {{
+                width: 100px;
+                height: 100px;
+                object-fit: contain;
+                flex-shrink: 0;
             }}
         </style>
     </head>
     <body>
-        <div class="header">
-            <h1>Chemistry Assessment Review</h1>
-            <p>Mt. SAC Chemistry Workbook Tool</p>
-        </div>
+        <p>Dear {name},</p>
 
-        <div class="student-card">
-            <div>
-                <div class="info-label">Student Name</div>
-                <div class="info-value">{name}</div>
-                <div class="info-label" style="margin-top: 8px;">Student ID</div>
-                <div class="info-value" style="font-size: 14px; font-weight: normal; color: #475569;">{student_id}</div>
-            </div>
-            <div>
-                <div class="info-label" style="margin-bottom: 6px; text-align: right;">Score</div>
-                <div class="score-badge">{score}</div>
-            </div>
-        </div>
+        <p>
+            Thank you for taking your time to complete the pre-assessment for the Foundations in
+            Success in Chemistry workbook.
+            <span class="highlight">Your results are meant to help you identify the math
+            subjects that you'll want to review in preparation for your chemistry class.</span>
+        </p>
 
-        <div class="section-title">Recommended Topics for Review</div>
-        <ul class="topics-list">
-            {topics_html}
+        <p>The workbook has a variety of resources for you, including:</p>
+        <ul class="resource-list">
+            <li><span class="num">1)</span>Suggestions for time management</li>
+            <li><span class="num">2)</span>A passport to encourage you to find support centers on campus</li>
+            <li><span class="num">3)</span>A bingo sheet to help you track your progress (you get a prize for completing it!)</li>
+            <li><span class="num">4)</span>Plenty of practice problems for the math skills needed in chemistry</li>
         </ul>
 
-        <div class="footer">
-            Generated automatically by Mt. SAC Chemistry Workbook Tool
+        <p class="encouragement">We encourage you to take advantage of the many support resources available at Mt SAC!</p>
+
+        <div class="recommend-block">
+            <div class="recommend-text">
+                <p>Based on your pre-assessment results, we recommend that you work through the following sections in the workbook:</p>
+            </div>
+            {mascot_html}
         </div>
+
+        <div class="sections-box">
+            {sections_html}
+        </div>
+
+        <p class="signoff">Remember, you can do this!</p>
+        <p>&mdash; The Chemistry Department Professors</p>
     </body>
     </html>
     """
 
 def file_generator_sync(results, filename, class_data):
     zip_buffer = io.BytesIO()
+
+    mascot_b64 = get_image_base64(MASCOT_IMAGE_URL)
 
     # 1. Calculate class statistics
     total_students = len(results)
@@ -167,8 +211,8 @@ def file_generator_sync(results, filename, class_data):
 
             # --- Render Each Student Sequentially ---
             for student_id, test_results in results.items():
-                html = generate_html(student_id, test_results)
-                
+                html = generate_html(student_id, test_results, image_src=mascot_b64)
+
                 page.set_content(html)
                 pdf_bytes = page.pdf(
                     format="A4",
@@ -185,7 +229,7 @@ def file_generator_sync(results, filename, class_data):
                 # Write directly to ZIP buffer and wipe bytes from Python RAM
                 zip_file.writestr(fname, pdf_bytes)
                 del pdf_bytes
-                
+
                 # Force Python to release unreferenced byte objects immediately
                 gc.collect()
 
@@ -199,7 +243,7 @@ def file_generator_sync(results, filename, class_data):
 def generate_class_report_html(class_data: dict, total_students: int) -> str:
     class_average = class_data.get("average", 0.0)
     missed_topics = class_data.get("missed_topics", [])
-    
+
     # Calculate highest count to scale the progress bar widths (avoid division by zero)
     max_missed = max([count for _, count in missed_topics], default=1)
     if max_missed == 0:
@@ -230,7 +274,7 @@ def generate_class_report_html(class_data: dict, total_students: int) -> str:
         topic_title = TOPIC_MAP.get(topic_code, f"Topic {topic_code}")
         # Percentage of max count for visual bar fill
         bar_width = int((count / max_missed) * 100)
-        
+
         # Color coding: red for high missed count, blue for moderate, light grey for zero
         if count == 0:
             bar_class = "bar-zero"
@@ -273,8 +317,7 @@ def generate_class_report_html(class_data: dict, total_students: int) -> str:
             }}
             .header h1 {{ font-size: 24px; color: #1e3a8a; margin-bottom: 4px; }}
             .header p {{ font-size: 13px; color: #6b7280; text-transform: uppercase; letter-spacing: 0.5px; }}
-            
-            /* Overview Stats Grid */
+
             .stats-grid {{
                 display: grid;
                 grid-template-columns: 1fr 1fr;
@@ -291,7 +334,6 @@ def generate_class_report_html(class_data: dict, total_students: int) -> str:
             .stat-value {{ font-size: 24px; font-weight: 700; color: #0f172a; }}
             .stat-value.highlight {{ color: #2563eb; }}
 
-            /* Focus Section */
             .section-title {{
                 font-size: 16px;
                 font-weight: 600;
@@ -328,7 +370,6 @@ def generate_class_report_html(class_data: dict, total_students: int) -> str:
             .focus-count {{ font-size: 12px; color: #b91c1c; }}
             .no-focus {{ font-size: 14px; color: #166534; background-color: #f0fdf4; padding: 12px; border-radius: 6px; }}
 
-            /* Bar Chart Section */
             .chart-container {{
                 display: flex;
                 flex-direction: column;
