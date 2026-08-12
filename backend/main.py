@@ -43,8 +43,6 @@ async def download_zip(test_file: UploadFile = File(...),
     #process and return a downloadable ZIP
     test_contents = await test_file.read()
     student_contents = None
-    if student_file is not None:
-        student_contents = await student_file.read()
     
     test_df = pd.read_excel(io.BytesIO(test_contents))
     student_info_df = None
