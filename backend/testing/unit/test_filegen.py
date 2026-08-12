@@ -20,7 +20,7 @@ import pytest
 import sys
 from pathlib import Path
 # Add the parent directory (backend) to sys.path
-sys.path.insert(0, str(Path(__file__).resolve().parent.parent))
+sys.path.insert(0, str(Path(__file__).resolve().parent.parent.parent))
 
 import filegen as fg
 from processing import TOPIC_MAP

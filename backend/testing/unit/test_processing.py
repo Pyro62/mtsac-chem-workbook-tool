@@ -14,7 +14,7 @@ from fastapi import HTTPException
 import sys
 from pathlib import Path
 # Add the parent directory (backend) to sys.path
-sys.path.insert(0, str(Path(__file__).resolve().parent.parent))
+sys.path.insert(0, str(Path(__file__).resolve().parent.parent.parent))
 
 import processing as ap
 
@@ -70,7 +70,7 @@ def make_student_info_df(students):
 
 @pytest.fixture
 def sample_files_dir():
-    return os.path.join(os.path.dirname(__file__), "testing_data")
+    return Path(__file__).resolve().parent.parent / "testing_data"
 
 
 # ---------------------------------------------------------------------------
