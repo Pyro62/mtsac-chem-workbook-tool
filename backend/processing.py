@@ -33,7 +33,10 @@ def get_student_name(student_info_df, num_stu):
     id_name = dict()
     row_idx = student_info_df[student_info_df[0] == 'Student Name'].index[0] + 1
     for stu in range(num_stu):
-        id = student_info_df.iloc[row_idx, 1]
+        try:
+            id = student_info_df.iloc[row_idx, 1]
+        except:
+            raise HTTPException(status_code=400, detail=f"Assessment File and Student Information File do not match")
 
         # Get student name from the row, format as "First L."
         name = student_info_df.iloc[row_idx, 0]
@@ -161,8 +164,20 @@ def validate_test_df(test_df):
     required_columns = ["QuizName", "QuizClass", "ZipGradeID"]
     for column in required_columns:
         if column not in test_df.columns:
-            raise HTTPException(status_code=400, detail=f"Invalid Student Assessment File")
-    return True
+            raise HTTPException(status_code=400, detail=f"Invalid Assessment File")
+
+
+def validate_student_df(student_info_df):
+    expected_data = ["Course Information", "Course Title", "Term", "CRN", "Duration", "Status", "Enrollment Counts", "Summary Class List", "Student Name"]
+    given_student_data = student_info_df.iloc[:, 0].values
+
+    for label in given_student_data:
+        if label in expected_data:
+            expected_data.remove(label)
+
+    #Checks if any expected data is missing
+    if len(expected_data) > 0:
+        raise HTTPException(status_code=400, detail=f"Invalid Student Information File")
 
 
 # Function Prints assessment results 
@@ -170,12 +185,15 @@ def validate_test_df(test_df):
 # Returns: VOID (But probably should return the something)
 def process_assessment(test_df, student_info_df = None):
 
-    # Validate test dataframe
-    validate_test_df(test_df)
-    
     #Get number of students (1 row = 1 student)
     num_students = test_df.shape[0]
 
+    # Validate given files
+    validate_test_df(test_df)
+    
+    if student_info_df is not None:
+        validate_student_df(student_info_df)
+    
     #Get student names mapped to their IDs
     id_name_map = get_student_name(student_info_df, num_students) if student_info_df is not None else dict()
 
@@ -191,7 +209,11 @@ def process_assessment(test_df, student_info_df = None):
 
         #Get student's information
         stu_id = f"A0{get_stu_id(student_row, student)}"
+
         name = id_name_map.get(stu_id, "Chemistry Student") 
+        if student_info_df is not None and name == "Chemistry Student":
+            raise HTTPException(status_code=400, detail=f"Assessment File and Student Information File do not match")
+        
         stu_score = get_stu_score(student_row)
 
         #Get topics to review for student based on incorrect questions
@@ -211,12 +233,11 @@ def process_assessment(test_df, student_info_df = None):
 
     return result
 
-#student_info_df = pd.read_excel('../test_data/classList.xls', header = None)
-#test_df = pd.read_excel('../test_data/newAssessment.xlsx')
+'''student_info_df = pd.read_excel('../test_data/classList.xls', header = None)
+test_df1 = pd.read_excel('../test_data/newAssessment.xlsx')
+result = process_assessment(test_df1, student_info_df)
 
-#result = process_assessment(test_df, student_info_df)
-
-'''for student in result:
+for student in result:
     print(f"Student ID: {student}")
     print(f"Name: {result[student]['name']}")
     print(f"Score: {result[student]['score']}")

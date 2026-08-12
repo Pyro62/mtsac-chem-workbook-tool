@@ -5,6 +5,7 @@ from playwright.sync_api import sync_playwright
 from processing import TOPIC_MAP
 import base64
 import urllib.request
+from pypdf import PdfWriter, PdfReader, PageObject
 MASCOT_IMAGE_URL = "https://i.ibb.co/spH9N6XS/assessment-image.png"
 
 def get_image_base64(url_or_path: str) -> str:
@@ -168,7 +169,13 @@ def generate_html(student_id: str, test_results: dict, image_src: str) -> str:
     </html>
     """
 
-def file_generator_sync(results, filename, class_data):
+def file_generator_sync(
+    results: dict, 
+    filename: str, 
+    class_data: dict, 
+    concatenate_files: bool = False, 
+    print_ready: bool = False
+):
     zip_buffer = io.BytesIO()
 
     mascot_b64 = get_image_base64(MASCOT_IMAGE_URL)
@@ -177,12 +184,40 @@ def file_generator_sync(results, filename, class_data):
     total_students = len(results)
     class_html = generate_class_report_html(class_data, total_students)
 
+    # Determine if merging is required
+    should_merge = concatenate_files or print_ready
+    merger = PdfWriter() if should_merge else None
+
+    # Helper function to append and insert blank pages if print_ready is enabled
+    def append_to_merger(pdf_bytes: bytes):
+        if not merger:
+            return
+        
+        pdf_stream = io.BytesIO(pdf_bytes)
+        reader = PdfReader(pdf_stream)
+        
+        # Append each page from the current PDF into the merger individualy
+        for page in reader.pages:
+            merger.add_page(page)
+
+        # If print-ready is requested, ensure even page count per document for duplex printing
+        if print_ready:
+            page_count = len(reader.pages)
+            if page_count % 2 != 0:
+                last_page = reader.pages[-1]
+                width = float(last_page.mediabox.width)
+                height = float(last_page.mediabox.height)
+            
+                # Create a blank page using the dimensions of the document
+                blank_page = PageObject.create_blank_page(width=width, height=height)
+                merger.add_page(blank_page)
+    
     # 2. Launch a temporary, ultra-lean single Chromium process
     with sync_playwright() as p:
         browser = p.chromium.launch(
             headless=True,
             args=[
-               "--no-sandbox",
+                "--no-sandbox",
                 "--disable-dev-shm-usage",
                 "--disable-gpu",
                 "--single-process",
@@ -200,25 +235,34 @@ def file_generator_sync(results, filename, class_data):
 
         with zipfile.ZipFile(zip_buffer, "w", zipfile.ZIP_DEFLATED) as zip_file:
             # --- Render Class Summary First ---
-            page.set_content(class_html)
+            page.set_content(class_html, wait_until="networkidle")
             summary_pdf_bytes = page.pdf(
                 format="A4",
                 print_background=True,
+                scale=0.88,
                 margin={"top": "15mm", "bottom": "15mm", "left": "15mm", "right": "15mm"}
             )
-            zip_file.writestr("00_Class_Summary_Report.pdf", summary_pdf_bytes)
+            if not merger: 
+                zip_file.writestr("00_Class_Summary_Report.pdf", summary_pdf_bytes)
+
+            # Append to master PDF merger if enabled
+            append_to_merger(summary_pdf_bytes)
             del summary_pdf_bytes  # Immediately free variable memory
 
             # --- Render Each Student Sequentially ---
             for student_id, test_results in results.items():
                 html = generate_html(student_id, test_results, image_src=mascot_b64)
 
-                page.set_content(html)
+                page.set_content(html, wait_until="networkidle")
                 pdf_bytes = page.pdf(
                     format="A4",
                     print_background=True,
+                    scale=0.93,
                     margin={"top": "15mm", "bottom": "15mm", "left": "15mm", "right": "15mm"}
                 )
+
+                # Append to master PDF merger if enabled
+                append_to_merger(pdf_bytes)
 
                 # Format filename
                 raw_name = test_results.get('name', 'Student')
@@ -227,11 +271,21 @@ def file_generator_sync(results, filename, class_data):
                 fname = f"{safe_name}_{safe_id}_review.pdf"
 
                 # Write directly to ZIP buffer and wipe bytes from Python RAM
-                zip_file.writestr(fname, pdf_bytes)
+                if not merger:
+                    zip_file.writestr(fname, pdf_bytes)
                 del pdf_bytes
 
                 # Force Python to release unreferenced byte objects immediately
                 gc.collect()
+
+            # --- Write Concatenated Master PDF if requested ---
+            if merger:
+                merged_pdf_buffer = io.BytesIO()
+                merger.write(merged_pdf_buffer)
+                merger.close()
+
+                merged_filename = "00_Print_Ready_Merged.pdf" if print_ready else "00_All_Students_Merged.pdf"
+                zip_file.writestr(merged_filename, merged_pdf_buffer.getvalue())
 
         # Cleanly close page and browser, releasing ~150MB of C++ RAM back to host OS
         page.close()
