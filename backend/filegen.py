@@ -136,8 +136,8 @@ def generate_html(student_id: str, test_results: dict, image_src: str) -> str:
         <p>Dear {name},</p>
 
         <p>
-            Thank you for taking your time to complete the pre-assessment for the Foundations in
-            Success in Chemistry workbook.
+            Thank you for taking your time to complete the pre-assessment for the Foundations for
+            Success in Chemistry Workbook.
             <span class="highlight">Your results are meant to help you identify the math
             subjects that you'll want to review in preparation for your chemistry class.</span>
         </p>

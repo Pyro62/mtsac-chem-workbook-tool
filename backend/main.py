@@ -9,6 +9,8 @@ import pandas as pd
 from fastapi.responses import StreamingResponse
 from filegen import file_generator_sync
 import asyncio
+from fastapi import HTTPException
+
 load_dotenv()
 
 app = FastAPI()
@@ -43,12 +45,20 @@ async def download_zip(test_file: UploadFile = File(...),
     #process and return a downloadable ZIP
     test_contents = await test_file.read()
     student_contents = None
-    
-    test_df = pd.read_excel(io.BytesIO(test_contents))
+
+    try:
+        test_df = pd.read_excel(io.BytesIO(test_contents))
+    except Exception as e:
+        raise HTTPException(status_code=400, detail="Error reading Assessment file")  
+
     student_info_df = None
     if student_file is not None:
         student_contents = await student_file.read()
-        student_info_df = pd.read_excel(io.BytesIO(student_contents), header=None)
+        
+        try:
+            student_info_df = pd.read_excel(io.BytesIO(student_contents), header=None)
+        except Exception as e:
+            raise HTTPException(status_code=400, detail="Error reading student information file")
 
     results = process_assessment(test_df, student_info_df)
     class_data = get_class_data(results)
