@@ -49,7 +49,7 @@ async def download_zip(test_file: UploadFile = File(...),
     try:
         test_df = pd.read_excel(io.BytesIO(test_contents))
     except Exception as e:
-        raise HTTPException(status_code=400, detail="Error reading test file")  
+        raise HTTPException(status_code=400, detail="Error reading Assessment file")  
 
     student_info_df = None
     if student_file is not None:
