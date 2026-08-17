@@ -210,7 +210,7 @@ def process_assessment(test_df, student_info_df = None):
         #Get student's information
         stu_id = f"A0{get_stu_id(student_row, student)}"
 
-        name = id_name_map.get(stu_id, "Chemistry Student") 
+        name = id_name_map.get(stu_id, f"Chemistry Student ({stu_id})") 
         if student_info_df is not None and name == "Chemistry Student":
             raise HTTPException(status_code=400, detail=f"Assessment File and Student Information File do not match")
         
