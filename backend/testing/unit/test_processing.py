@@ -321,7 +321,7 @@ class TestProcessAssessmentInMemory:
 
         result = ap.process_assessment(test_df, student_info_df=None)
 
-        assert result["A01234567"]["name"] == "Chemistry Student"
+        assert result["A01234567"]["name"] == "Chemistry Student (A01234567)"
 
     def test_mismatched_files_raise_http_exception(self):
         # student_info_df only knows about one student, but assessment has two rows
