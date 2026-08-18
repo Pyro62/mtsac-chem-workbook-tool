@@ -1,6 +1,23 @@
 import { useState } from 'react'
 import './App.css';
 
+const validateExcelFile = (file) => {
+  const validExtensions = ['.xls', '.xlsx'];
+  const validMimeTypes = [
+    'application/vnd.ms-excel', // .xls
+    'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet' // .xlsx
+  ];
+
+  const fileName = file.name.toLowerCase();
+  const hasValidExtension = validExtensions.some(ext => fileName.endsWith(ext));
+  const hasValidMimeType = validMimeTypes.includes(file.type);
+
+  // Some browsers/OSes report an empty or generic MIME type for xls/xlsx,
+  // so we accept the file if EITHER check passes, but reject if the
+  // extension is clearly wrong (that catches renamed files reliably enough
+  // for a client-side check).
+  return hasValidExtension && (hasValidMimeType || file.type === '');
+};
 function App() {
   const [testFile, setTestFile] = useState(null)
   const [studentFile, setStudentFile] = useState(null)
@@ -8,20 +25,40 @@ function App() {
   const [printReady, setPrintReady] = useState(false)
   const [result, setResult] = useState(null)
   const [loading, setLoading] = useState(false)
+  const [fileError, setFileError] = useState('');
 
   const handleTestFileChange = (e) => {
-    if (e.target.files) {
-      setTestFile(e.target.files[0])
-    }
+  const file = e.target.files?.[0];
+  if (!file) {
+    setTestFile(null);
+    return;
   }
+  if (!validateExcelFile(file)) {
+    setFileError('Assessment File must be a .xls or .xlsx spreadsheet.');
+    setTestFile(null);
+    e.target.value = ''; // reset the input so they can re-pick
+    return;
+  }
+  setFileError('');
+  setTestFile(file);
+};
+
 
   const handleStudentFileChange = (e) => {
-    if (e.target.files && e.target.files.length > 0) {
-      setStudentFile(e.target.files[0])
-    } else {
-      setStudentFile(null)
-    }
+  const file = e.target.files?.[0];
+  if (!file) {
+    setStudentFile(null);
+    return;
   }
+  if (!validateExcelFile(file)) {
+    setFileError('Student Info File must be a .xls or .xlsx spreadsheet.');
+    setStudentFile(null);
+    e.target.value = '';
+    return;
+  }
+  setFileError('');
+  setStudentFile(file);
+};
 
   // --- Handlers for Linked Checkbox Behavior ---
   const handleConcatenateChange = (e) => {
@@ -136,6 +173,10 @@ function App() {
               disabled={loading}
             />
           </div>
+
+          {fileError && (
+          <p style={{ color: 'red', marginTop: '8px' }}>{fileError}</p>
+          )}
 
           {/* Option Checkboxes */}
           <div style={{ margin: '15px 0', textAlign: 'left', display: 'inline-block' }}>
