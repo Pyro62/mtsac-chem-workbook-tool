@@ -9,6 +9,7 @@ import pandas as pd
 from fastapi.responses import StreamingResponse
 from filegen import file_generator_sync
 import asyncio
+from pathlib import Path
 from fastapi import HTTPException
 
 load_dotenv()
@@ -46,10 +47,23 @@ async def download_zip(test_file: UploadFile = File(...),
     test_contents = await test_file.read()
     student_contents = None
 
-    try:
-        test_df = pd.read_excel(io.BytesIO(test_contents))
-    except Exception as e:
-        raise HTTPException(status_code=400, detail="Error reading Assessment file")  
+    ext = Path(test_file.filename).suffix.lower()
+
+    #finds the file type and reads it into a pandas dataframe
+    if ext in ['.xlsx', '.xls']:
+        try:
+            test_df = pd.read_excel(io.BytesIO(test_contents))
+        except Exception as e:
+            raise HTTPException(status_code=400, detail="Error reading Assessment file")
+        
+    elif ext == '.csv':
+        try:
+            test_df = pd.read_csv(io.BytesIO(test_contents))
+        except Exception as e:
+            raise HTTPException(status_code=400, detail="Error reading Assessment file")
+        
+    else:
+        raise HTTPException(status_code=400, detail=f"Unsupported file type: {ext}")  
 
     student_info_df = None
     if student_file is not None:
