@@ -53,8 +53,8 @@ function App() {
     }
 
     if (!validateExcelFile(file)) {
-      setFileError('Assessment File must be a .xls or .xlsx spreadsheet.');
       clearTestFile();
+      setFileError('Assessment File must be a .xls or .xlsx spreadsheet.');
       return;
     }
 
@@ -70,8 +70,8 @@ function App() {
     }
 
     if (!validateExcelFile(file)) {
-      setFileError('Student Info File must be a .xls or .xlsx spreadsheet.');
       clearStudentFile();
+      setFileError('Student Info File must be a .xls or .xlsx spreadsheet.');
       return;
     }
 
