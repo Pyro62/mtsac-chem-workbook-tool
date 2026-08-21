@@ -2,10 +2,11 @@ import { useState, useRef } from 'react';
 import './App.css';
 
 const validateExcelFile = (file) => {
-  const validExtensions = ['.xls', '.xlsx'];
+  const validExtensions = ['.xls', '.xlsx', '.csv'];
   const validMimeTypes = [
     'application/vnd.ms-excel',
-    'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet'
+    'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet',
+    'text/csv'
   ];
 
   const fileName = file.name.toLowerCase();
@@ -191,7 +192,7 @@ function App() {
               <input
                 id="test-file-input"
                 type="file"
-                accept=".xlsx, .xls"
+                accept=".xlsx, .xls, .csv"
                 onChange={handleTestFileChange}
                 disabled={loading}
                 ref={testFileInputRef}
