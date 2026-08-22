@@ -40,7 +40,12 @@ def get_student_name(student_info_df, num_stu):
 
         # Get student name from the row, format as "First L."
         name = student_info_df.iloc[row_idx, 0]
-        last, rest = name.split(", ")
+        
+        try:
+            last, rest = name.split(", ")
+        except ValueError:
+            raise HTTPException(status_code=400, detail=f"Student name format is invalid")
+        
         first = rest.split()[0]
         name = f"{first} {last[0]}."
 
@@ -238,7 +243,7 @@ def process_assessment(test_df, student_info_df = None):
         name = id_name_map.get(stu_id, f"Chemistry Student ({stu_id})") 
 
         #If student info file is provided, but name could not be retrieved, then the two files do not match
-        if student_info_df is not None and name == "Chemistry Student":
+        if student_info_df is not None and "Chemistry Student" in name:
             raise HTTPException(status_code=400, detail=f"Assessment File and Student Information File do not match")
         
         stu_score = get_stu_score(student_row)
