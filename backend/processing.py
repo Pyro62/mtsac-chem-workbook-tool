@@ -40,7 +40,12 @@ def get_student_name(student_info_df, num_stu):
 
         # Get student name from the row, format as "First L."
         name = student_info_df.iloc[row_idx, 0]
-        last, rest = name.split(", ")
+        
+        try:
+            last, rest = name.split(", ")
+        except ValueError:
+            raise HTTPException(status_code=400, detail=f"Student name format is invalid")
+        
         first = rest.split()[0]
         name = f"{first} {last[0]}."
 
@@ -58,13 +63,26 @@ def get_student_name(student_info_df, num_stu):
 # Returns: List of the questions student got wrong
 def get_incorrect_questions(student_row):
     incorrect_question = []
+    diff_file = False
 
-    num_of_questions = int(student_row["NumbeOfQuestions"])
-    num_correct = student_row["NumberCorrect"]
-    
+    # Get the number of questions and the number of correct answers for the student
+    if "NumbeOfQuestions" in student_row.index and "NumberCorrect" in student_row.index:
+        num_of_questions = int(student_row["NumbeOfQuestions"])
+        num_correct = student_row["NumberCorrect"]
+    elif "Earned Points" in student_row.index and "Possible Points" in student_row.index:
+        num_of_questions = int(student_row["Possible Points"])
+        num_correct = int(student_row["Earned Points"])
+        diff_file = True
+    else:
+        raise HTTPException(status_code=400, detail=f"Assessment File is missing required columns")
+
     for questionNum in range(num_of_questions):
 
-        points = student_row[f"EarnedPt{questionNum+1}"]
+        #Get the points earned for the current question, depending on the file type
+        if diff_file:
+            points = student_row[f"Points{questionNum+1}"]
+        else:
+            points = student_row[f"EarnedPt{questionNum+1}"]
 
         if points == 0:
             incorrect_question.append(questionNum+1)
@@ -84,7 +102,14 @@ def get_topics_to_review(student_incorrect_questions, student_row):
     questions_per_topic = 2 
 
     for question in student_incorrect_questions:
-        topic_count = int(student_row["NumbeOfQuestions"] / questions_per_topic)
+
+        if "NumbeOfQuestions" in student_row.index:
+            topic_count = int(student_row["NumbeOfQuestions"] / questions_per_topic)
+        elif "Possible Points" in student_row.index:
+            topic_count = int(student_row["Possible Points"] / questions_per_topic)
+        else:
+            raise HTTPException(status_code=400, detail=f"Assessment File is missing required columns")
+
         topic_num = question % topic_count
         if topic_num == 0:
             topic_num = topic_count
@@ -115,7 +140,12 @@ def get_topics_to_review(student_incorrect_questions, student_row):
 # Parameter: student row and student number (index)
 # Returns: student id string
 def get_stu_id(student_row, student):
-    stu_id = f"Temp ID #{student + 1}" if pd.isna(student_row["ZipGradeID"]) else student_row["ZipGradeID"]
+    stu_id = f"{student}"
+
+    if "ZipGradeID" in student_row.index and not pd.isna(student_row["ZipGradeID"]):
+        stu_id = student_row["ZipGradeID"]
+    else:
+        stu_id = student_row["StudentID"]
 
     return stu_id
 
@@ -161,7 +191,7 @@ def get_class_data(result_dict):
 
 def validate_test_df(test_df):
     # Check if required columns exist in the dataframe
-    required_columns = ["QuizName", "QuizClass", "ZipGradeID"]
+    required_columns = ["QuizName", "QuizClass", "FirstName", "LastName", "PercentCorrect", "QuizCreated", "DataExported"]
     for column in required_columns:
         if column not in test_df.columns:
             raise HTTPException(status_code=400, detail=f"Invalid Assessment File")
@@ -211,7 +241,9 @@ def process_assessment(test_df, student_info_df = None):
         stu_id = f"A0{get_stu_id(student_row, student)}"
 
         name = id_name_map.get(stu_id, f"Chemistry Student ({stu_id})") 
-        if student_info_df is not None and name == "Chemistry Student":
+
+        #If student info file is provided, but name could not be retrieved, then the two files do not match
+        if student_info_df is not None and "Chemistry Student" in name:
             raise HTTPException(status_code=400, detail=f"Assessment File and Student Information File do not match")
         
         stu_score = get_stu_score(student_row)
@@ -235,6 +267,8 @@ def process_assessment(test_df, student_info_df = None):
 
 '''student_info_df = pd.read_excel('../test_data/classList.xls', header = None)
 test_df1 = pd.read_excel('../test_data/newAssessment.xlsx')
+student_row = test_df1.iloc[0]
+print(student_row.index)
 result = process_assessment(test_df1, student_info_df)
 
 for student in result:

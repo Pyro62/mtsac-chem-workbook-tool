@@ -2,10 +2,11 @@ import { useState, useRef } from 'react';
 import './App.css';
 
 const validateExcelFile = (file) => {
-  const validExtensions = ['.xls', '.xlsx'];
+  const validExtensions = ['.xls', '.xlsx', '.csv'];
   const validMimeTypes = [
     'application/vnd.ms-excel',
-    'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet'
+    'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet',
+    'text/csv'
   ];
 
   const fileName = file.name.toLowerCase();
@@ -53,8 +54,8 @@ function App() {
     }
 
     if (!validateExcelFile(file)) {
-      setFileError('Assessment File must be a .xls or .xlsx spreadsheet.');
       clearTestFile();
+      setFileError('Assessment File must be a .xls or .xlsx spreadsheet.');
       return;
     }
 
@@ -70,8 +71,8 @@ function App() {
     }
 
     if (!validateExcelFile(file)) {
-      setFileError('Student Info File must be a .xls or .xlsx spreadsheet.');
       clearStudentFile();
+      setFileError('Student Info File must be a .xls or .xlsx spreadsheet.');
       return;
     }
 
@@ -191,7 +192,7 @@ function App() {
               <input
                 id="test-file-input"
                 type="file"
-                accept=".xlsx, .xls"
+                accept=".xlsx, .xls, .csv"
                 onChange={handleTestFileChange}
                 disabled={loading}
                 ref={testFileInputRef}
