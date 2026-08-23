@@ -177,3 +177,22 @@ body {
   align-items: center;
   gap: 6px;
 }
+
+/* Floating instructions link */
+.wr-instructions-link {
+  position: fixed;
+  bottom: 20px;
+  right: 20px;
+  z-index: 9999;
+  background-color: #0056b3;
+  color: #ffffff;
+  padding: 8px 14px;
+  border-radius: 20px;
+  text-decoration: none;
+  font-size: 13px;
+  font-weight: 600;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.15);
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
