@@ -312,6 +312,15 @@ function App() {
       >
         💬 Feedback
       </a>
+
+      <a
+        href="https://docs.google.com/document/d/1f6bXpUV3sMWjnuRmXrkXf-vj1q5JlkFc/edit?usp=sharing&ouid=113161247400807924966&rtpof=true&sd=true"
+        target="_blank"
+        rel="noopener noreferrer"
+        className="wr-instructions-link"
+      >
+        📄 Usage Instructions
+      </a>
     </div>
   );
 }
