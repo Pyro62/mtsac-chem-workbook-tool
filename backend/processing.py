@@ -230,6 +230,9 @@ def process_assessment(test_df, student_info_df = None):
     #Nested dictionary: id --> dictionary (name, score, topics to review)
     result = dict()
 
+    #Counts amount of student without a name in the student info file (if provided)
+    unmatched = 0
+
     for student in range(num_students):
 
         student_information = dict()
@@ -244,7 +247,7 @@ def process_assessment(test_df, student_info_df = None):
 
         #If student info file is provided, but name could not be retrieved, then the two files do not match
         if student_info_df is not None and "Chemistry Student" in name:
-            raise HTTPException(status_code=400, detail=f"Assessment File and Student Information File do not match")
+            unmatched += 1
         
         stu_score = get_stu_score(student_row)
 
@@ -262,6 +265,8 @@ def process_assessment(test_df, student_info_df = None):
         #Student information keys: "name", "score", "topics_to_review"
         result[stu_id] = student_information
 
+    if unmatched == num_students:
+        raise HTTPException(status_code=400, detail=f"Assessment File and Student Information File do not match")
 
     return result
 
