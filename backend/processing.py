@@ -89,7 +89,7 @@ def get_incorrect_questions(student_row):
             incorrect_question.append(questionNum+1)
 
         # If found all incorrect answers (trusting columns "NumberCorerct" and "NumbeOfQuestions")
-        if num_of_questions - num_correct < len(incorrect_question):
+        if num_of_questions - num_correct == len(incorrect_question):
             break
 
     return incorrect_question
@@ -273,7 +273,7 @@ def process_assessment(test_df, student_info_df = None):
         raise HTTPException(status_code=400, detail=f"Assessment File and Student Information File do not match")
 
     return result
-
+'''
 student_info_df = pd.read_excel('../test_data/classList.xls', header = None)
 test_df1 = pd.read_excel('../test_data/newAssessment.xlsx')
 student_row = test_df1.iloc[0]
@@ -285,4 +285,4 @@ for student in result:
     print(f"Score: {result[student]['score']}")
     print(f"Topics to Review: {result[student]['topics_to_review']}")
     print()
-
+'''
