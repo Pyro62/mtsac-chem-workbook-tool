@@ -35,8 +35,11 @@ def get_student_name(student_info_df, num_stu):
     for stu in range(num_stu):
         try:
             id = student_info_df.iloc[row_idx, 1]
-        except:
+        except IndexError:
             raise HTTPException(status_code=400, detail=f"Assessment File and Student Information File do not match")
+        except:
+            id = f"BLANK{stu}"
+            #raise HTTPException(status_code=400, detail=f"Assessment File and Student Information File do not match")
 
         # Get student name from the row, format as "First L."
         name = student_info_df.iloc[row_idx, 0]
@@ -87,10 +90,6 @@ def get_incorrect_questions(student_row):
         if points == 0:
             incorrect_question.append(questionNum+1)
 
-        # If found all incorrect answers (trusting columns "NumberCorerct" and "NumbeOfQuestions")
-        if num_of_questions - num_correct < len(incorrect_question):
-            break
-
     return incorrect_question
 
 
@@ -140,7 +139,7 @@ def get_topics_to_review(student_incorrect_questions, student_row):
 # Parameter: student row and student number (index)
 # Returns: student id string
 def get_stu_id(student_row, student):
-    stu_id = f"{student}"
+    stu_id = f"BLANK{student}"
 
     if "ZipGradeID" in student_row.index and not pd.isna(student_row["ZipGradeID"]):
         stu_id = student_row["ZipGradeID"]
@@ -241,9 +240,12 @@ def process_assessment(test_df, student_info_df = None):
         student_row = test_df.iloc[student]
 
         #Get student's information
-        stu_id = f"A0{get_stu_id(student_row, student)}"
+        id = get_stu_id(student_row, student)
+        name = "Chemistry Student"
 
-        name = id_name_map.get(stu_id, f"Chemistry Student ({stu_id})") 
+        if "BLANK" not in str(id):
+            stu_id = f"A0{id}"
+            name = id_name_map.get(stu_id, name + f" ({stu_id})")
 
         #If student info file is provided, but name could not be retrieved, then the two files do not match
         if student_info_df is not None and "Chemistry Student" in name:
@@ -269,11 +271,10 @@ def process_assessment(test_df, student_info_df = None):
         raise HTTPException(status_code=400, detail=f"Assessment File and Student Information File do not match")
 
     return result
-
-'''student_info_df = pd.read_excel('../test_data/classList.xls', header = None)
+'''
+student_info_df = pd.read_excel('../test_data/classList.xls', header = None)
 test_df1 = pd.read_excel('../test_data/newAssessment.xlsx')
 student_row = test_df1.iloc[0]
-print(student_row.index)
 result = process_assessment(test_df1, student_info_df)
 
 for student in result:
