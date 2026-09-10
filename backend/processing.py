@@ -35,6 +35,8 @@ def get_student_name(student_info_df, num_stu):
     for stu in range(num_stu):
         try:
             id = student_info_df.iloc[row_idx, 1]
+        except IndexError:
+            raise HTTPException(status_code=400, detail=f"Assessment File and Student Information File do not match")
         except:
             id = f"BLANK{stu}"
             #raise HTTPException(status_code=400, detail=f"Assessment File and Student Information File do not match")
@@ -87,10 +89,6 @@ def get_incorrect_questions(student_row):
 
         if points == 0:
             incorrect_question.append(questionNum+1)
-
-        # If found all incorrect answers (trusting columns "NumberCorerct" and "NumbeOfQuestions")
-        if num_of_questions - num_correct == len(incorrect_question):
-            break
 
     return incorrect_question
 
