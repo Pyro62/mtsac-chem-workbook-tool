@@ -30,6 +30,7 @@ def generate_html(student_id: str, test_results: dict, image_src: str) -> str:
     if name == "Name Missing":
         name = f"Student ({student_id})"
 
+    score = test_results.get("score", "N/A")
     topics = test_results.get("topics_to_review", [])
 
     mascot_html = f'<img src="{image_src}" class="mascot-img" alt="Mascot" />'
@@ -133,7 +134,7 @@ def generate_html(student_id: str, test_results: dict, image_src: str) -> str:
         </style>
     </head>
     <body>
-        <p>Dear {name},</p>
+        <p>Dear {name} | Score: {score},</p>
 
         <p>
             Thank you for taking your time to complete the pre-assessment for the Foundations for
